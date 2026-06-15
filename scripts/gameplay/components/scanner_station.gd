@@ -1,6 +1,8 @@
 extends Node2D
 class_name ScannerStation
 
+signal scan_target_requested(actor: TableActor, contact_position: Vector2)
+
 @export var theme_resource: CheckoutThemeResource = preload("res://content/ui/checkout_theme.tres")
 @export var hit_area: Area2D
 @export var scanner_cursor_root: Node2D
@@ -17,6 +19,8 @@ const SCANNER_CURSOR_Z_INDEX: int = 2000
 var _is_crosshair_suppressed: bool = false
 var _is_register_hovered: bool = false
 var _is_scan_beam_flashing: bool = false
+var _is_mouse_inside_window: bool = true
+var _held_scan_actor: TableActor
 var _crosshair_tween: Tween
 var _beam_tween: Tween
 
@@ -27,7 +31,7 @@ func _ready() -> void:
 	if scanner_cursor_root != null:
 		scanner_cursor_root.z_index = SCANNER_CURSOR_Z_INDEX
 		scanner_cursor_root.visible = true
-	Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
+	_hide_os_cursor()
 	_update_scanner_cursor(get_viewport().get_mouse_position().round())
 	_refresh_scanner_visuals()
 
@@ -64,11 +68,27 @@ func play_success_feedback(scan_count: int) -> void:
 
 func _process(_delta: float) -> void:
 	_update_scanner_cursor(get_viewport().get_mouse_position().round())
+	_update_hold_scan_state()
 	_refresh_scanner_visuals()
 
 
+func _notification(what: int) -> void:
+	match what:
+		NOTIFICATION_WM_MOUSE_ENTER:
+			_is_mouse_inside_window = true
+			_hide_os_cursor()
+		NOTIFICATION_WM_MOUSE_EXIT:
+			_is_mouse_inside_window = false
+			_show_os_cursor()
+		NOTIFICATION_APPLICATION_FOCUS_IN:
+			if _is_mouse_inside_window:
+				_hide_os_cursor()
+		NOTIFICATION_APPLICATION_FOCUS_OUT:
+			_show_os_cursor()
+
+
 func _exit_tree() -> void:
-	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	_show_os_cursor()
 
 
 func _find_actor_from_area(area: Area2D) -> TableActor:
@@ -111,6 +131,25 @@ func _update_scanner_cursor(global_mouse_position: Vector2) -> void:
 		scanner_cursor_root.global_position = global_mouse_position
 
 
+func _update_hold_scan_state() -> void:
+	if _held_scan_actor != null and not is_instance_valid(_held_scan_actor):
+		_held_scan_actor = null
+
+	if not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) or _is_crosshair_suppressed:
+		_held_scan_actor = null
+		return
+
+	var target_actor: TableActor = _find_topmost_pointer_actor()
+	if target_actor == null:
+		_held_scan_actor = null
+		return
+	if target_actor == _held_scan_actor:
+		return
+
+	_held_scan_actor = target_actor
+	scan_target_requested.emit(target_actor, get_crosshair_global_position())
+
+
 func _refresh_scanner_visuals() -> void:
 	var crosshair_color: Color = _get_crosshair_color()
 	if crosshair_root != null:
@@ -120,20 +159,20 @@ func _refresh_scanner_visuals() -> void:
 		crosshair_root.modulate = final_crosshair_color
 
 	if beam != null:
-		beam.visible = _is_register_hovered or _is_scan_beam_flashing
+		beam.visible = Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) and not _is_crosshair_suppressed
 		beam.modulate = _get_beam_color()
 
 
 func _get_crosshair_color() -> Color:
+	if _is_register_hovered:
+		return theme_resource.scanner_register_beam_color if theme_resource != null else Color(0.117647, 0.435294, 0.313725, 1.0)
 	if _is_hovering_weighable_product():
 		return theme_resource.scanner_fruit_hover_color if theme_resource != null else Color(0.133333, 0.588235, 0.952941, 1.0)
 	return theme_resource.scanner_beam_color if theme_resource != null else Color(1.0, 0.0, 0.25098, 1.0)
 
 
 func _get_beam_color() -> Color:
-	if _is_register_hovered:
-		return theme_resource.scanner_register_beam_color if theme_resource != null else Color(0.117647, 0.435294, 0.313725, 1.0)
-	return theme_resource.scanner_beam_color if theme_resource != null else Color(1.0, 0.0, 0.25098, 1.0)
+	return _get_crosshair_color()
 
 
 func _is_hovering_weighable_product() -> bool:
@@ -178,6 +217,14 @@ func _pulse_crosshair(scan_count: int) -> void:
 	_crosshair_tween.tween_property(crosshair_root, "scale", Vector2.ONE, 0.09) \
 		.set_trans(Tween.TRANS_BACK) \
 		.set_ease(Tween.EASE_OUT)
+
+
+func _hide_os_cursor() -> void:
+	Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
+
+
+func _show_os_cursor() -> void:
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
 
 func _validate_required_references() -> void:

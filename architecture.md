@@ -76,8 +76,8 @@ Wichtige Szenen:
 - `TableActor` (Basisklasse): gemeinsame Drag-/Slot-/Finish-API fuer Produkt- und Coupon-Actors.
 - `CheckoutTable`: mittlerer Kassentisch als Root der spielbaren Flaeche.
 - `ProductScatterView`: verstreute sichtbare Objekt-Slots im rechten Tischbereich, Spawn-von-rechts-Animationen, Slot-Marker.
-- `ProductActor`: Rechtsklick-Drag, Rotation, Linksklick-Scan fuer Fixpreis-Produkte, Buchungszahl, Schatten und Produktfeedback.
-- `ScannerStation`: permanenter Scanner-Cursor, Crosshair exakt am Mauspunkt, Scanner-Sprite darunter, Scannerstrahl, Hitbox/Area2D und SFX-/Feedback-Anker.
+- `ProductActor`: Rechtsklick-Drag, Rotation, Buchungszahl, Schatten und Produktfeedback. Scanner-Kontakte kommen zentral von `ScannerStation`.
+- `ScannerStation`: permanenter Scanner-Cursor, Crosshair exakt am Mauspunkt, Scanner-Sprite darunter, Scannerstrahl, Hitbox/Area2D, Hold-Scan-Tracking und SFX-/Feedback-Anker.
 - `RegisterDisplay`: editorseitig platzierbares Kassendisplay im Tisch, zeigt den offenen Betrag des aktuell gebuchten Produktes.
 - `RegisterCheckoutZone`: editorseitig platzierte Kassen-Hitbox zum Erzeugen des Kassenbons.
 - `TrashZone`: Drop-Zone fuer Produkt-/Coupon-Entsorgung.
@@ -178,8 +178,8 @@ Wenn eine Runtime-Erzeugung noetig ist, muss sie eine vorbereitete Scene instanz
 
 Eine Szene hat genau eine Hauptaufgabe:
 
-- `ProductActor`: sammelt Rechtsklick-Drag-/Rotate-Input, meldet Linksklick-Intents fuer Scanner-Scans, zeigt Produktzustand und die Buchungszahl ab `1`.
-- `ScannerStation`: folgt dauerhaft der Maus, versteckt den OS-Cursor, faerbt Crosshair/Beam nach Zielzustand und zeigt Scannerfeedback.
+- `ProductActor`: sammelt Rechtsklick-Drag-/Rotate-Input, zeigt Produktzustand und die Buchungszahl ab `1`.
+- `ScannerStation`: folgt dauerhaft der Maus, versteckt den OS-Cursor innerhalb des Spielfensters, stellt ihn beim Verlassen/Fokusverlust wieder her, faerbt Crosshair/Beam nach Zielzustand und zeigt Scannerfeedback.
 - `ProductScatterView`: zeigt Slots verstreut im rechten Tischbereich und animiert neue Objekte von rechts herein.
 - `RegisterCheckoutZone`: meldet den Kassenbon-Abschluss-Intent.
 - `TrashZone`: meldet Drop-Intents.
@@ -208,17 +208,19 @@ Keine UI-Komponente bucht Geld, scannt Produkte, veraendert Suspicion oder aktiv
 
 ### Scan
 
-1. `ScannerStation` versteckt den OS-Cursor immer, laesst den Scanner-Cursor dauerhaft der Maus folgen und positioniert das Crosshair exakt am Mauspunkt.
+1. `ScannerStation` versteckt den OS-Cursor innerhalb des Spielfensters, stellt ihn beim Verlassen/Fokusverlust wieder her, laesst den Scanner-Cursor dauerhaft der Maus folgen und positioniert das Crosshair exakt am Mauspunkt.
 2. Das Scanner-Sprite bleibt unterhalb des Crosshairs sichtbar; Scanner-Sprite, Crosshair und Strahl liegen immer ueber Gameplay-Objekten und UI-Popups. Waehrend Produkt-Drag wird nur das Crosshair ausgeblendet.
-3. Linksklick auf ein Festpreis-Produkt meldet einen Produkt-Scan.
-4. Linksklick auf einen Coupon aktiviert ihn ehrlich.
-5. Rechtsklick-Drag bewegt Produkte und Coupons; Coupon-Drag in `TrashZone` bleibt Coupon-Scam.
-6. Hovern ueber Obst faerbt das Crosshair blau. Obst wird per Rechtsklick-Drag normal mit sichtbarem Scanner-Sprite bewegt, ohne Scannerverkauf.
-7. `RunController` baut fuer Produkt-Scans einen `ScanRequest` mit Actor-ID, Kontaktposition, Rotation/Hit-Details und aktuellem Runtime-State.
-8. `ScanSystem` entscheidet, ob der Produkt-Scan gueltig ist. Wiegbare Produkte werden vor dem Caught-Roll abgelehnt.
-9. Bei Mehrfachscan fragt `ScanSystem` ueber den gemeinsamen Charge-Pfad den `SuspicionSystem`-Caught-Roll gegen die Suspicion-Kurve des aktiven Kundentyps ab.
-10. `EconomySystem` berechnet den offenen Festpreis-Betrag und erhoeht `ProductInstance.scan_count`.
-11. `RunController` aktualisiert Runtime-State und sendet Feedback-Events an Presentation: Beep, roter Scannerstrahl/Crosshair-Impuls, Betrag im Kassendisplay, Buchungszahl am Produkt, Customer-Signal-State.
+3. Gedrueckter Linksklick auf ein Festpreis-Produkt meldet einen Produkt-Scan. Wird Linksklick gehalten, scannt jedes neu beruehrte Festpreis-Produkt einmal.
+4. Bleibt Linksklick gehalten, kann dasselbe Festpreis-Produkt erneut gescannt werden, nachdem das Crosshair es verlassen und wieder beruehrt hat.
+5. Gedrueckter Linksklick auf einen Coupon aktiviert ihn ehrlich.
+6. Rechtsklick-Drag bewegt Produkte und Coupons; Coupon-Drag in `TrashZone` bleibt Coupon-Scam.
+7. Hovern ueber Obst faerbt Crosshair und bei gedruecktem Linksklick auch den Scannerstrahl blau. Obst wird per Rechtsklick-Drag normal mit sichtbarem Scanner-Sprite bewegt, ohne Scannerverkauf.
+8. Hovern ueber `RegisterCheckoutZone` faerbt Crosshair und bei gedruecktem Linksklick auch den Scannerstrahl gruen. Der Scannerstrahl ist nur bei gedruecktem Linksklick sichtbar.
+9. `RunController` baut fuer Produkt-Scans einen `ScanRequest` mit Actor-ID, Kontaktposition, Rotation/Hit-Details und aktuellem Runtime-State.
+10. `ScanSystem` entscheidet, ob der Produkt-Scan gueltig ist. Wiegbare Produkte werden vor dem Caught-Roll abgelehnt.
+11. Bei Mehrfachscan fragt `ScanSystem` ueber den gemeinsamen Charge-Pfad den `SuspicionSystem`-Caught-Roll gegen die Suspicion-Kurve des aktiven Kundentyps ab.
+12. `EconomySystem` berechnet den offenen Festpreis-Betrag und erhoeht `ProductInstance.scan_count`.
+13. `RunController` aktualisiert Runtime-State und sendet Feedback-Events an Presentation: Beep, roter Scannerstrahl/Crosshair-Impuls, Betrag im Kassendisplay, Buchungszahl am Produkt, Customer-Signal-State.
 
 ### Wiegen
 
@@ -244,7 +246,7 @@ Keine UI-Komponente bucht Geld, scannt Produkte, veraendert Suspicion oder aktiv
 
 1. Erfolgreiche Scans und Wiegungen erhoehen nur den offenen Produktbetrag und `ProductInstance.scan_count`; sie buchen noch kein Geld in die Kasse.
 2. Ab `scan_count >= 1` zeigt `ProductActor` rechts unten am Sprite eine kleine Buchungszahl.
-3. Haelt der Spieler den Scanner ueber `RegisterCheckoutZone`, zeigt `ScannerStation` einen gruenen Scannerstrahl.
+3. Haelt der Spieler den Scanner ueber `RegisterCheckoutZone`, zeigt `ScannerStation` ein gruenes Crosshair; der Scannerstrahl wird nur bei gedruecktem Linksklick sichtbar und dann ebenfalls gruen.
 4. Linksklick auf `RegisterCheckoutZone` oeffnet ein Confirm-Popup ueber `HudRoot`.
 5. Bei Nein wird nur das Popup geschlossen; der Kunde bleibt aktiv.
 6. Bei Ja baut `ReceiptBuilder` aus allen sichtbaren Produkten mit `scan_count > 0` und offenem Betrag die Bon-Zeilen.

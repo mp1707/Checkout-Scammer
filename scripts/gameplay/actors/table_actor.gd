@@ -5,7 +5,6 @@ class_name TableActor
 ## Owns drag input, slot bookkeeping and the finish-fly animation so zones,
 ## scanner and controllers can work against one typed API.
 
-signal scanner_clicked(actor: TableActor, click_position: Vector2)
 signal drag_started(actor: TableActor)
 signal drag_moved(actor: TableActor, previous_position: Vector2, current_position: Vector2, movement_delta: Vector2)
 signal drag_ended(actor: TableActor, drop_position: Vector2)
@@ -110,7 +109,6 @@ func _on_interaction_area_input_event(_viewport: Viewport, event: InputEvent, _s
 	if mouse_button_event == null:
 		return
 	if mouse_button_event.button_index == MOUSE_BUTTON_LEFT and mouse_button_event.pressed:
-		scanner_clicked.emit(self, mouse_button_event.position.round())
 		get_viewport().set_input_as_handled()
 		return
 	if mouse_button_event.button_index == MOUSE_BUTTON_RIGHT and mouse_button_event.pressed:

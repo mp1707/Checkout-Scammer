@@ -56,14 +56,17 @@
 ### Scanner
 
 - Der Scanner ist dauerhaft der Maus-Cursor.
-- Der OS-Cursor ist im Spielbereich versteckt.
+- Der OS-Cursor ist im Spielbereich versteckt und wird beim Verlassen des Spiels wieder sichtbar.
 - Das Crosshair sitzt exakt am Mauspunkt.
 - Das Scanner-Sprite bleibt sichtbar und sitzt unterhalb des Crosshairs.
 - Scanner-Sprite, Crosshair und Strahl liegen immer über Produkt-Sprites, Waagentexten und Popups.
 - Linksklick auf ein Festpreis-Produkt scannt dieses Produkt.
-- Beim erfolgreichen Scan wird ein roter Scannerstrahl sichtbar und das Crosshair wirkt kräftiger.
-- Mehrfachscans entstehen durch wiederholte Linksklicks auf dasselbe Produkt.
-- Hält man das Crosshair über Obst, wird das Crosshair blau.
+- Hält man Linksklick gedrückt, scannt jedes neu berührte Festpreis-Produkt einmal.
+- Bleibt Linksklick gedrückt, kann dasselbe Festpreis-Produkt erneut gescannt werden, wenn das Crosshair es verlässt und wieder berührt.
+- Der Scannerstrahl ist nur sichtbar, während Linksklick gedrückt ist.
+- Beim erfolgreichen Scan wirkt das Crosshair kräftiger.
+- Mehrfachscans entstehen durch wiederholte Linksklicks oder durch Verlassen und erneutes Berühren desselben Produkts bei gehaltenem Linksklick.
+- Hält man das Crosshair über Obst, werden Crosshair und gedrückter Scannerstrahl blau.
 - Obst ist nicht scannerverkaufbar. Rechtsklick-Drag bewegt Obst normal mit sichtbarem Scanner-Sprite; während Drag verschwindet nur das Crosshair.
 - Coupons werden per Linksklick mit dem Handscanner ehrlich aktiviert.
 
@@ -102,7 +105,7 @@
 - Nach einem erfolgreichen Scan oder einer erfolgreichen Wiegung zeigt das Display der Kasse den offenen Verkaufsbetrag des aktuell gebuchten Produktes.
 - Der aktuelle Verkaufsbetrag nutzt grüne, displaytypische Schrift direkt im Kassendisplay.
 - Ist der Einkauf fertig, hält der Spieler den Scanner über die Kasse.
-- Über der Kasse wird der Scannerstrahl grün.
+- Über der Kasse werden Crosshair und gedrückter Scannerstrahl grün.
 - Linksklick auf die Kasse öffnet ein Popup: Bon erzeugen? Ja/Nein.
 - Nein schließt nur das Popup.
 - Ja erzeugt den Kassenbon als Popup.

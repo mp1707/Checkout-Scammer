@@ -147,6 +147,7 @@ func _validate_required_references() -> void:
 func _connect_children() -> void:
 	if scanner_station != null:
 		scanner_station.set_crosshair_suppressed(false)
+		scanner_station.scan_target_requested.connect(_on_scanner_station_scan_target_requested)
 	if product_scatter_view != null:
 		product_scatter_view.product_actor_spawned.connect(_on_product_actor_spawned)
 		product_scatter_view.coupon_actor_spawned.connect(_on_coupon_actor_spawned)
@@ -162,13 +163,11 @@ func _connect_children() -> void:
 
 func _on_product_actor_spawned(actor: ProductActor, _slot_index: int) -> void:
 	_connect_actor_drag_signals(actor)
-	actor.scanner_clicked.connect(_on_actor_scanner_clicked)
 	actor.set_interaction_enabled(_is_actor_input_enabled)
 
 
 func _on_coupon_actor_spawned(actor: CouponActor, _slot_index: int) -> void:
 	_connect_actor_drag_signals(actor)
-	actor.scanner_clicked.connect(_on_actor_scanner_clicked)
 	actor.set_interaction_enabled(_is_actor_input_enabled)
 
 
@@ -199,19 +198,23 @@ func _route_actor_drop(actor: TableActor) -> void:
 		return
 
 
-func _on_actor_scanner_clicked(actor: TableActor, click_position: Vector2) -> void:
+func _on_scanner_station_scan_target_requested(actor: TableActor, contact_position: Vector2) -> void:
+	_route_scanner_target(actor, contact_position)
+
+
+func _route_scanner_target(actor: TableActor, contact_position: Vector2) -> void:
 	if scanner_station != null:
 		scanner_station.set_crosshair_suppressed(false)
 
 	var product_actor: ProductActor = actor as ProductActor
 	if product_actor != null:
 		if product_actor.product_instance != null and not product_actor.product_instance.is_weighable():
-			product_hand_scan_requested.emit(product_actor, _get_scanner_contact_position(click_position))
+			product_hand_scan_requested.emit(product_actor, contact_position)
 		return
 
 	var coupon_actor: CouponActor = actor as CouponActor
 	if coupon_actor != null:
-		coupon_hand_scan_requested.emit(coupon_actor, _get_scanner_contact_position(click_position))
+		coupon_hand_scan_requested.emit(coupon_actor, contact_position)
 
 
 func _on_register_checkout_requested() -> void:
@@ -256,12 +259,6 @@ func _get_actor_finish_position(actor: TableActor, is_sale: bool) -> Vector2:
 	if zone == null:
 		return actor.global_position
 	return register_checkout_zone.get_checkout_position() if is_sale else trash_zone.get_drop_position()
-
-
-func _get_scanner_contact_position(fallback_position: Vector2) -> Vector2:
-	if scanner_station != null:
-		return scanner_station.get_crosshair_global_position()
-	return fallback_position
 
 
 func _product_uses_bonus_coin_sound(product_instance: ProductInstance) -> bool:
