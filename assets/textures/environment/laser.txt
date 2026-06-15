@@ -1,0 +1,14 @@
+laser.png atlas
+
+Sheet size: 128x256 px
+Frame size: 32x64 px
+Grid: 4 columns x 4 rows
+Frame order per animation: left to right, 4 frames
+Cursor hot spot: x=16, y=16 inside each 32x64 frame
+Runtime animation speed: 3 fps
+
+Animations:
+- blue_chevron: row 0, y=0, frames at x=0,32,64,96. Used while hovering weighable fruit without holding the scan button.
+- red_cross: row 1, y=64, frames at x=0,32,64,96. Default laser cursor.
+- red_cross_laser: row 2, y=128, frames at x=0,32,64,96. Used while the scan button is held, including while hovering fruit.
+- green_checkmark: row 3, y=192, frames at x=0,32,64,96. Used while hovering the register checkout zone.

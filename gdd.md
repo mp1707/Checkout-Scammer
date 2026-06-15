@@ -57,17 +57,19 @@
 
 - Der Scanner ist dauerhaft der Maus-Cursor.
 - Der OS-Cursor ist im Spielbereich versteckt und wird beim Verlassen des Spiels wieder sichtbar.
-- Das Crosshair sitzt exakt am Mauspunkt.
-- Das Scanner-Sprite bleibt sichtbar und sitzt unterhalb des Crosshairs.
-- Scanner-Sprite, Crosshair und Strahl liegen immer über Produkt-Sprites, Waagentexten und Popups.
+- Der Hotspot des animierten Laser-Cursors sitzt exakt am Mauspunkt.
+- Das Scanner-Sprite bleibt sichtbar und sitzt unterhalb des Laser-Hotspots.
+- Der Laser-Cursor nutzt vier animierte Zustände aus `assets/textures/environment/laser.png`.
+- Scanner-Sprite und Laser-Cursor liegen immer über Produkt-Sprites, Waagentexten und Popups; das Scanner-Sprite wird über dem Laser gezeichnet.
 - Linksklick auf ein Festpreis-Produkt scannt dieses Produkt.
 - Hält man Linksklick gedrückt, scannt jedes neu berührte Festpreis-Produkt einmal.
-- Bleibt Linksklick gedrückt, kann dasselbe Festpreis-Produkt erneut gescannt werden, wenn das Crosshair es verlässt und wieder berührt.
-- Der Scannerstrahl ist nur sichtbar, während Linksklick gedrückt ist.
-- Beim erfolgreichen Scan wirkt das Crosshair kräftiger.
+- Bleibt Linksklick gedrückt, kann dasselbe Festpreis-Produkt erneut gescannt werden, wenn der Cursor-Hotspot dessen Hitbox aktiv verlässt und wieder berührt.
+- Der rote Cross-with-Laser-Zustand ist nur sichtbar, während Linksklick gedrückt ist.
+- Beim erfolgreichen Scan pulst der Laser-Cursor kräftiger.
 - Mehrfachscans entstehen durch wiederholte Linksklicks oder durch Verlassen und erneutes Berühren desselben Produkts bei gehaltenem Linksklick.
-- Hält man das Crosshair über Obst, werden Crosshair und gedrückter Scannerstrahl blau.
-- Obst ist nicht scannerverkaufbar. Rechtsklick-Drag bewegt Obst normal mit sichtbarem Scanner-Sprite; während Drag verschwindet nur das Crosshair.
+- Hält man den Laser-Cursor über Obst, wird die blaue Chevron-Animation angezeigt, solange die Scantaste nicht gedrückt ist.
+- Wird die Scantaste gehalten, bleibt der rote Cross-with-Laser-Zustand als kontinuierlicher Scanvorgang aktiv, auch über Obst.
+- Obst ist nicht scannerverkaufbar. Rechtsklick-Drag bewegt Obst normal; während Drag verschwindet nur der Laser-Cursor, das Scanner-Sprite bleibt sichtbar.
 - Coupons werden per Linksklick mit dem Handscanner ehrlich aktiviert.
 
 ### Waage
@@ -105,7 +107,7 @@
 - Nach einem erfolgreichen Scan oder einer erfolgreichen Wiegung zeigt das Display der Kasse den offenen Verkaufsbetrag des aktuell gebuchten Produktes.
 - Der aktuelle Verkaufsbetrag nutzt grüne, displaytypische Schrift direkt im Kassendisplay.
 - Ist der Einkauf fertig, hält der Spieler den Scanner über die Kasse.
-- Über der Kasse werden Crosshair und gedrückter Scannerstrahl grün.
+- Über der Kasse wird die grüne Checkmark-Animation angezeigt.
 - Linksklick auf die Kasse öffnet ein Popup: Bon erzeugen? Ja/Nein.
 - Nein schließt nur das Popup.
 - Ja erzeugt den Kassenbon als Popup.
@@ -459,11 +461,11 @@ Out of scope für den Prototyp:
 - Falls für diesen Kunden ein Coupon aktiv ist, liegt er zusätzlich zuerst in der Produktfläche.
 - Der Spieler nimmt ein Produkt von der Produktfläche.
 - Der Handscanner ist permanent der Cursor.
-- Festpreis-Produkte werden per Linksklick mit dem Crosshair gescannt.
+- Festpreis-Produkte werden per Linksklick mit dem Laser-Cursor gescannt.
 - Ein gültiger Scan löst aus:
   - Beep
   - Verkaufsbetrag im Kassendisplay erhöht sich
-  - Crosshair-/Scannerstrahl-Feedback
+  - Laser-Cursor-Feedback
 - Obst wird mit dem Scanner-Cursor gedraggt und auf die Waage gelegt.
 - Danach kann der Spieler das Festpreis-Produkt nochmal scannen oder Obst erneut wiegen.
 - Ab der ersten Buchung zeigt das Produkt rechts unten seine Buchungszahl.
@@ -503,7 +505,7 @@ Out of scope für den Prototyp:
   - optional zurück auf dem Tisch, falls nötig
 - Linksklick auf Festpreis-Produkte scannt.
 - Rechtsklick-Drag bewegt Produkte und Coupons.
-- Obst kann mit dem Scanner-Cursor per Rechtsklick normal gedraggt werden; während des Drags verschwindet das Crosshair, das Scanner-Sprite bleibt sichtbar.
+- Obst kann mit dem Scanner-Cursor per Rechtsklick normal gedraggt werden; während des Drags verschwindet nur der Laser-Cursor, das Scanner-Sprite bleibt sichtbar.
 - Der offene Verkaufsbetrag wird erst beim Erzeugen des Kassenbons zum Total-Wert gebucht.
 - Beim Ablegen im Müll-Loch verschwindet das Produkt oder der Coupon.
 - Sticker werden aus dem Sticker-Popup gezogen und können nur auf Obst gedroppt werden.
@@ -522,8 +524,8 @@ Out of scope für den Prototyp:
 - Geld zählt links in der Menüleiste animiert hoch, wenn der Kassenbon erzeugt wird
 - Kurzer Screen Shake bei Double Scans
 - Visuelles Feedback am Scanner
-- Rotes Crosshair, das beim Scannen kräftiger wird
-- Sichtbarer Scannerstrahl beim Linksklick-Scan
+- Roter Laser-Cursor, der beim Scannen kräftiger wird
+- Sichtbarer Cross-with-Laser-Zustand beim Linksklick-Scan
 - Produkt wobbelt oder squasht kurz beim erfolgreichen Scan
 
 ### Produktflächen-Juice
@@ -553,7 +555,7 @@ Für den ersten spielbaren Prototyp ist wichtig:
 - Verstreute Produktfläche im rechten Tischbereich
 - 10 Produkte pro Kunde
 - Alle Kundenprodukte direkt sichtbar auf der Matte
-- Handscanner als permanenter Cursor mit rotem Crosshair
+- Handscanner als permanenter Cursor mit sichtbarem Scanner-Sprite und rotem Laser-Default-Zustand
 - Scannen per Linksklick auf Festpreis-Produkte und Coupons
 - Obst ist wiegbar und nicht scanbar
 - Waage im Tischbereich

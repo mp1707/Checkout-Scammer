@@ -41,6 +41,20 @@ func set_interaction_enabled(is_enabled: bool) -> void:
 		interaction_area.input_pickable = is_enabled
 
 
+func contains_global_point(global_point: Vector2) -> bool:
+	if interaction_area == null:
+		return false
+
+	for child: Node in interaction_area.get_children():
+		var collision_shape: CollisionShape2D = child as CollisionShape2D
+		if collision_shape == null or collision_shape.disabled or collision_shape.shape == null:
+			continue
+		if _collision_shape_contains_global_point(collision_shape, global_point):
+			return true
+
+	return false
+
+
 func play_finish_feedback(target_global_position: Vector2, is_sale: bool) -> void:
 	_play_finish_fly(
 		target_global_position,
@@ -72,6 +86,20 @@ func _unhandled_input(event: InputEvent) -> void:
 ## Override for additional pressed-button handling while dragging (e.g. rotation).
 func _handle_secondary_press(_mouse_button_event: InputEventMouseButton) -> void:
 	pass
+
+
+func _collision_shape_contains_global_point(collision_shape: CollisionShape2D, global_point: Vector2) -> bool:
+	var rectangle_shape: RectangleShape2D = collision_shape.shape as RectangleShape2D
+	if rectangle_shape != null:
+		var local_point: Vector2 = collision_shape.to_local(global_point)
+		var half_size: Vector2 = rectangle_shape.size * 0.5
+		return absf(local_point.x) <= half_size.x and absf(local_point.y) <= half_size.y
+
+	var circle_shape: CircleShape2D = collision_shape.shape as CircleShape2D
+	if circle_shape != null:
+		return collision_shape.to_local(global_point).length() <= circle_shape.radius
+
+	return false
 
 
 ## Override to reset subclass drag state when the finish animation starts.

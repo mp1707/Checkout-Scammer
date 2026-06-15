@@ -64,18 +64,7 @@ func play_sticker_apply_feedback() -> void:
 func contains_global_point(global_point: Vector2) -> bool:
 	if collision_shape == null or collision_shape.shape == null:
 		return false
-
-	var rectangle_shape: RectangleShape2D = collision_shape.shape as RectangleShape2D
-	if rectangle_shape != null:
-		var local_point: Vector2 = collision_shape.to_local(global_point)
-		var half_size: Vector2 = rectangle_shape.size * 0.5
-		return absf(local_point.x) <= half_size.x and absf(local_point.y) <= half_size.y
-
-	var circle_shape: CircleShape2D = collision_shape.shape as CircleShape2D
-	if circle_shape != null:
-		return collision_shape.to_local(global_point).length() <= circle_shape.radius
-
-	return false
+	return _collision_shape_contains_global_point(collision_shape, global_point)
 
 
 func play_successful_scan_feedback(scan_count: int) -> void:

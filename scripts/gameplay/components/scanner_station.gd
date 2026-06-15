@@ -3,31 +3,28 @@ class_name ScannerStation
 
 signal scan_target_requested(actor: TableActor, contact_position: Vector2)
 
-@export var theme_resource: CheckoutThemeResource = preload("res://content/ui/checkout_theme.tres")
 @export var hit_area: Area2D
 @export var scanner_cursor_root: Node2D
 @export var scanner_sprite: Sprite2D
-@export var crosshair_root: Node2D
-@export var beam: CanvasItem
+@export var laser_cursor_sprite: AnimatedSprite2D
 @export var beep_player: AudioStreamPlayer2D
 @export var animation_player: AnimationPlayer
 
-const CROSSHAIR_IDLE_ALPHA: float = 0.46
-const CROSSHAIR_SCANNING_ALPHA: float = 0.82
 const SCANNER_CURSOR_Z_INDEX: int = 2000
+const CURSOR_DEFAULT_ANIMATION: StringName = &"red_cross"
+const CURSOR_FRUIT_ANIMATION: StringName = &"blue_chevron"
+const CURSOR_SCANNING_ANIMATION: StringName = &"red_cross_laser"
+const CURSOR_REGISTER_ANIMATION: StringName = &"green_checkmark"
 
-var _is_crosshair_suppressed: bool = false
+var _is_cursor_suppressed: bool = false
 var _is_register_hovered: bool = false
-var _is_scan_beam_flashing: bool = false
 var _is_mouse_inside_window: bool = true
-var _held_scan_actor: TableActor
-var _crosshair_tween: Tween
-var _beam_tween: Tween
+var _scan_locked_actors: Array[TableActor] = []
+var _cursor_tween: Tween
 
 
 func _ready() -> void:
 	_validate_required_references()
-	_apply_theme()
 	if scanner_cursor_root != null:
 		scanner_cursor_root.z_index = SCANNER_CURSOR_Z_INDEX
 		scanner_cursor_root.visible = true
@@ -36,8 +33,8 @@ func _ready() -> void:
 	_refresh_scanner_visuals()
 
 
-func set_crosshair_suppressed(is_suppressed: bool) -> void:
-	_is_crosshair_suppressed = is_suppressed
+func set_cursor_suppressed(is_suppressed: bool) -> void:
+	_is_cursor_suppressed = is_suppressed
 	_refresh_scanner_visuals()
 
 
@@ -46,11 +43,9 @@ func set_register_hovered(is_hovered: bool) -> void:
 	_refresh_scanner_visuals()
 
 
-func get_crosshair_global_position() -> Vector2:
+func get_cursor_hotspot_global_position() -> Vector2:
 	if hit_area != null:
 		return hit_area.global_position
-	if crosshair_root != null:
-		return crosshair_root.global_position
 	return global_position
 
 
@@ -61,8 +56,7 @@ func flash() -> void:
 
 func play_success_feedback(scan_count: int) -> void:
 	_play_beep(scan_count)
-	_flash_scan_beam()
-	_pulse_crosshair(scan_count)
+	_pulse_laser_cursor(scan_count)
 	flash()
 
 
@@ -109,11 +103,26 @@ func _find_topmost_pointer_actor() -> TableActor:
 	if hit_area == null:
 		return null
 
-	var top_actor: TableActor = null
+	return _find_topmost_actor(_find_pointer_actors())
+
+
+func _find_pointer_actors() -> Array[TableActor]:
+	var actors: Array[TableActor] = []
+	if hit_area == null:
+		return actors
+
 	for area: Area2D in hit_area.get_overlapping_areas():
 		var actor: TableActor = _find_actor_from_area(area)
-		if actor == null:
+		if actor == null or actors.has(actor):
 			continue
+		actors.append(actor)
+
+	return actors
+
+
+func _find_topmost_actor(actors: Array[TableActor]) -> TableActor:
+	var top_actor: TableActor = null
+	for actor: TableActor in actors:
 		if top_actor == null or _actor_is_above(actor, top_actor):
 			top_actor = actor
 
@@ -132,67 +141,53 @@ func _update_scanner_cursor(global_mouse_position: Vector2) -> void:
 
 
 func _update_hold_scan_state() -> void:
-	if _held_scan_actor != null and not is_instance_valid(_held_scan_actor):
-		_held_scan_actor = null
-
-	if not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) or _is_crosshair_suppressed:
-		_held_scan_actor = null
+	if not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) or _is_cursor_suppressed:
+		_scan_locked_actors.clear()
 		return
 
-	var target_actor: TableActor = _find_topmost_pointer_actor()
+	var pointer_actors: Array[TableActor] = _find_pointer_actors()
+	_prune_scan_locked_actors(get_cursor_hotspot_global_position())
+
+	var target_actor: TableActor = _find_topmost_actor(pointer_actors)
 	if target_actor == null:
-		_held_scan_actor = null
 		return
-	if target_actor == _held_scan_actor:
+	if _scan_locked_actors.has(target_actor):
 		return
 
-	_held_scan_actor = target_actor
-	scan_target_requested.emit(target_actor, get_crosshair_global_position())
+	_scan_locked_actors.append(target_actor)
+	scan_target_requested.emit(target_actor, get_cursor_hotspot_global_position())
+
+
+func _prune_scan_locked_actors(hotspot_global_position: Vector2) -> void:
+	for index: int in range(_scan_locked_actors.size() - 1, -1, -1):
+		var actor: TableActor = _scan_locked_actors[index]
+		if actor == null or not is_instance_valid(actor) or not actor.contains_global_point(hotspot_global_position):
+			_scan_locked_actors.remove_at(index)
 
 
 func _refresh_scanner_visuals() -> void:
-	var crosshair_color: Color = _get_crosshair_color()
-	if crosshair_root != null:
-		var final_crosshair_color: Color = crosshair_color
-		final_crosshair_color.a = CROSSHAIR_SCANNING_ALPHA if _is_scan_beam_flashing else CROSSHAIR_IDLE_ALPHA
-		crosshair_root.visible = not _is_crosshair_suppressed
-		crosshair_root.modulate = final_crosshair_color
+	if laser_cursor_sprite == null:
+		return
 
-	if beam != null:
-		beam.visible = Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) and not _is_crosshair_suppressed
-		beam.modulate = _get_beam_color()
+	laser_cursor_sprite.visible = not _is_cursor_suppressed
+	var cursor_animation: StringName = _get_cursor_animation()
+	if laser_cursor_sprite.animation != cursor_animation or not laser_cursor_sprite.is_playing():
+		laser_cursor_sprite.play(cursor_animation)
 
 
-func _get_crosshair_color() -> Color:
+func _get_cursor_animation() -> StringName:
 	if _is_register_hovered:
-		return theme_resource.scanner_register_beam_color if theme_resource != null else Color(0.117647, 0.435294, 0.313725, 1.0)
+		return CURSOR_REGISTER_ANIMATION
+	if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+		return CURSOR_SCANNING_ANIMATION
 	if _is_hovering_weighable_product():
-		return theme_resource.scanner_fruit_hover_color if theme_resource != null else Color(0.133333, 0.588235, 0.952941, 1.0)
-	return theme_resource.scanner_beam_color if theme_resource != null else Color(1.0, 0.0, 0.25098, 1.0)
-
-
-func _get_beam_color() -> Color:
-	return _get_crosshair_color()
+		return CURSOR_FRUIT_ANIMATION
+	return CURSOR_DEFAULT_ANIMATION
 
 
 func _is_hovering_weighable_product() -> bool:
 	var product_actor: ProductActor = _find_topmost_pointer_actor() as ProductActor
 	return product_actor != null and product_actor.product_instance != null and product_actor.product_instance.is_weighable()
-
-
-func _flash_scan_beam() -> void:
-	_is_scan_beam_flashing = true
-	if _beam_tween != null and _beam_tween.is_valid():
-		_beam_tween.kill()
-	_beam_tween = create_tween()
-	_beam_tween.tween_interval(0.10)
-	_beam_tween.tween_callback(_end_scan_beam_flash)
-	_refresh_scanner_visuals()
-
-
-func _end_scan_beam_flash() -> void:
-	_is_scan_beam_flashing = false
-	_refresh_scanner_visuals()
 
 
 func _play_beep(scan_count: int) -> void:
@@ -204,17 +199,17 @@ func _play_beep(scan_count: int) -> void:
 	beep_player.play()
 
 
-func _pulse_crosshair(scan_count: int) -> void:
-	if crosshair_root == null:
+func _pulse_laser_cursor(scan_count: int) -> void:
+	if laser_cursor_sprite == null:
 		return
 
-	if _crosshair_tween != null and _crosshair_tween.is_valid():
-		_crosshair_tween.kill()
+	if _cursor_tween != null and _cursor_tween.is_valid():
+		_cursor_tween.kill()
 
 	var flash_scale: float = 1.0 + minf(float(maxi(scan_count - 1, 0)) * 0.08, 0.24)
-	crosshair_root.scale = Vector2.ONE * flash_scale
-	_crosshair_tween = create_tween()
-	_crosshair_tween.tween_property(crosshair_root, "scale", Vector2.ONE, 0.09) \
+	laser_cursor_sprite.scale = Vector2.ONE * flash_scale
+	_cursor_tween = create_tween()
+	_cursor_tween.tween_property(laser_cursor_sprite, "scale", Vector2.ONE, 0.09) \
 		.set_trans(Tween.TRANS_BACK) \
 		.set_ease(Tween.EASE_OUT)
 
@@ -232,18 +227,23 @@ func _validate_required_references() -> void:
 		push_error("%s is missing required scene reference 'scanner_cursor_root'." % get_path())
 	if scanner_sprite == null:
 		push_error("%s is missing required scene reference 'scanner_sprite'." % get_path())
-	if crosshair_root == null:
-		push_error("%s is missing required scene reference 'crosshair_root'." % get_path())
-	if beam == null:
-		push_error("%s is missing required scene reference 'beam'." % get_path())
+	if laser_cursor_sprite == null:
+		push_error("%s is missing required scene reference 'laser_cursor_sprite'." % get_path())
 	if hit_area == null:
 		push_error("%s is missing required scene reference 'hit_area'." % get_path())
+	_validate_cursor_animations()
 
 
-func _apply_theme() -> void:
-	if theme_resource == null:
+func _validate_cursor_animations() -> void:
+	if laser_cursor_sprite == null or laser_cursor_sprite.sprite_frames == null:
 		return
-	if beam != null:
-		beam.modulate = theme_resource.scanner_beam_color
-	if crosshair_root != null:
-		crosshair_root.modulate = theme_resource.scanner_beam_color
+
+	var required_animations: Array[StringName] = [
+		CURSOR_DEFAULT_ANIMATION,
+		CURSOR_FRUIT_ANIMATION,
+		CURSOR_SCANNING_ANIMATION,
+		CURSOR_REGISTER_ANIMATION,
+	]
+	for animation_name: StringName in required_animations:
+		if not laser_cursor_sprite.sprite_frames.has_animation(animation_name):
+			push_error("%s is missing laser cursor animation '%s'." % [get_path(), animation_name])

@@ -146,7 +146,7 @@ func _validate_required_references() -> void:
 
 func _connect_children() -> void:
 	if scanner_station != null:
-		scanner_station.set_crosshair_suppressed(false)
+		scanner_station.set_cursor_suppressed(false)
 		scanner_station.scan_target_requested.connect(_on_scanner_station_scan_target_requested)
 	if product_scatter_view != null:
 		product_scatter_view.product_actor_spawned.connect(_on_product_actor_spawned)
@@ -178,7 +178,7 @@ func _connect_actor_drag_signals(actor: TableActor) -> void:
 
 func _on_actor_drag_started(actor: TableActor) -> void:
 	if scanner_station != null:
-		scanner_station.set_crosshair_suppressed(true)
+		scanner_station.set_cursor_suppressed(true)
 	if scale_station.has_actor(actor):
 		scale_station.release_actor(actor)
 	product_scatter_view.release_actor(actor)
@@ -187,7 +187,7 @@ func _on_actor_drag_started(actor: TableActor) -> void:
 
 func _on_actor_drag_ended(actor: TableActor, _drop_position: Vector2) -> void:
 	if scanner_station != null:
-		scanner_station.set_crosshair_suppressed(false)
+		scanner_station.set_cursor_suppressed(false)
 	_route_actor_drop(actor)
 
 
@@ -204,7 +204,7 @@ func _on_scanner_station_scan_target_requested(actor: TableActor, contact_positi
 
 func _route_scanner_target(actor: TableActor, contact_position: Vector2) -> void:
 	if scanner_station != null:
-		scanner_station.set_crosshair_suppressed(false)
+		scanner_station.set_cursor_suppressed(false)
 
 	var product_actor: ProductActor = actor as ProductActor
 	if product_actor != null:
