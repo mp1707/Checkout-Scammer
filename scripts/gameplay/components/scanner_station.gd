@@ -146,7 +146,7 @@ func _update_hold_scan_state() -> void:
 		return
 
 	var pointer_actors: Array[TableActor] = _find_pointer_actors()
-	_prune_scan_locked_actors(get_cursor_hotspot_global_position())
+	_prune_scan_locked_actors(pointer_actors)
 
 	var target_actor: TableActor = _find_topmost_actor(pointer_actors)
 	if target_actor == null:
@@ -158,11 +158,35 @@ func _update_hold_scan_state() -> void:
 	scan_target_requested.emit(target_actor, get_cursor_hotspot_global_position())
 
 
-func _prune_scan_locked_actors(hotspot_global_position: Vector2) -> void:
+func _prune_scan_locked_actors(pointer_actors: Array[TableActor]) -> void:
 	for index: int in range(_scan_locked_actors.size() - 1, -1, -1):
 		var actor: TableActor = _scan_locked_actors[index]
-		if actor == null or not is_instance_valid(actor) or not actor.contains_global_point(hotspot_global_position):
+		if actor == null or not is_instance_valid(actor):
 			_scan_locked_actors.remove_at(index)
+			continue
+		if not pointer_actors.has(actor) and not _hit_area_overlaps_actor(actor):
+			_scan_locked_actors.remove_at(index)
+
+
+func _hit_area_overlaps_actor(actor: TableActor) -> bool:
+	if actor == null or hit_area == null:
+		return false
+
+	for child: Node in hit_area.get_children():
+		var collision_shape: CollisionShape2D = child as CollisionShape2D
+		if collision_shape == null or collision_shape.disabled or collision_shape.shape == null:
+			continue
+
+		var rectangle_shape: RectangleShape2D = collision_shape.shape as RectangleShape2D
+		if rectangle_shape != null:
+			var global_size: Vector2 = Vector2(
+				rectangle_shape.size.x * absf(collision_shape.global_scale.x),
+				rectangle_shape.size.y * absf(collision_shape.global_scale.y)
+			)
+			if actor.overlaps_global_rect(collision_shape.global_position, global_size):
+				return true
+
+	return false
 
 
 func _refresh_scanner_visuals() -> void:

@@ -10,6 +10,7 @@ EXIT_CODE=0
 SUITES=(
 	"tests/content/content_validation_test.gd"
 	"tests/unit/simulation_systems_test.gd"
+	"tests/unit/scanner_station_test.gd"
 	"tests/unit/run_controller_flow_test.gd"
 )
 

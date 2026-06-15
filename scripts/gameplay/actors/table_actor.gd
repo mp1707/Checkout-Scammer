@@ -55,6 +55,20 @@ func contains_global_point(global_point: Vector2) -> bool:
 	return false
 
 
+func overlaps_global_rect(global_center: Vector2, global_size: Vector2) -> bool:
+	if interaction_area == null:
+		return false
+
+	for child: Node in interaction_area.get_children():
+		var collision_shape: CollisionShape2D = child as CollisionShape2D
+		if collision_shape == null or collision_shape.disabled or collision_shape.shape == null:
+			continue
+		if _collision_shape_overlaps_global_rect(collision_shape, global_center, global_size):
+			return true
+
+	return false
+
+
 func play_finish_feedback(target_global_position: Vector2, is_sale: bool) -> void:
 	_play_finish_fly(
 		target_global_position,
@@ -100,6 +114,59 @@ func _collision_shape_contains_global_point(collision_shape: CollisionShape2D, g
 		return collision_shape.to_local(global_point).length() <= circle_shape.radius
 
 	return false
+
+
+func _collision_shape_overlaps_global_rect(
+	collision_shape: CollisionShape2D,
+	global_center: Vector2,
+	global_size: Vector2
+) -> bool:
+	var local_rect_bounds: Rect2 = _global_rect_to_collision_local_bounds(
+		collision_shape,
+		global_center,
+		global_size
+	)
+
+	var rectangle_shape: RectangleShape2D = collision_shape.shape as RectangleShape2D
+	if rectangle_shape != null:
+		var half_size: Vector2 = rectangle_shape.size * 0.5
+		var shape_bounds: Rect2 = Rect2(-half_size, rectangle_shape.size)
+		return shape_bounds.intersects(local_rect_bounds, true)
+
+	var circle_shape: CircleShape2D = collision_shape.shape as CircleShape2D
+	if circle_shape != null:
+		var closest_point: Vector2 = Vector2(
+			clampf(0.0, local_rect_bounds.position.x, local_rect_bounds.end.x),
+			clampf(0.0, local_rect_bounds.position.y, local_rect_bounds.end.y)
+		)
+		return closest_point.length() <= circle_shape.radius
+
+	return false
+
+
+func _global_rect_to_collision_local_bounds(
+	collision_shape: CollisionShape2D,
+	global_center: Vector2,
+	global_size: Vector2
+) -> Rect2:
+	var half_size: Vector2 = global_size * 0.5
+	var local_min: Vector2 = Vector2(INF, INF)
+	var local_max: Vector2 = Vector2(-INF, -INF)
+	var global_corners: Array[Vector2] = [
+		global_center + Vector2(-half_size.x, -half_size.y),
+		global_center + Vector2(half_size.x, -half_size.y),
+		global_center + Vector2(half_size.x, half_size.y),
+		global_center + Vector2(-half_size.x, half_size.y),
+	]
+
+	for global_corner: Vector2 in global_corners:
+		var local_corner: Vector2 = collision_shape.to_local(global_corner)
+		local_min.x = minf(local_min.x, local_corner.x)
+		local_min.y = minf(local_min.y, local_corner.y)
+		local_max.x = maxf(local_max.x, local_corner.x)
+		local_max.y = maxf(local_max.y, local_corner.y)
+
+	return Rect2(local_min, local_max - local_min)
 
 
 ## Override to reset subclass drag state when the finish animation starts.
