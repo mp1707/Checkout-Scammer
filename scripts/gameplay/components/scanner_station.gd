@@ -15,6 +15,7 @@ const CURSOR_DEFAULT_ANIMATION: StringName = &"red_cross"
 const CURSOR_FRUIT_ANIMATION: StringName = &"blue_chevron"
 const CURSOR_SCANNING_ANIMATION: StringName = &"red_cross_laser"
 const CURSOR_REGISTER_ANIMATION: StringName = &"green_checkmark"
+const SCAN_MOUSE_BUTTON: MouseButton = MOUSE_BUTTON_RIGHT
 
 var _is_cursor_suppressed: bool = false
 var _is_register_hovered: bool = false
@@ -141,7 +142,7 @@ func _update_scanner_cursor(global_mouse_position: Vector2) -> void:
 
 
 func _update_hold_scan_state() -> void:
-	if not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) or _is_cursor_suppressed:
+	if not Input.is_mouse_button_pressed(SCAN_MOUSE_BUTTON) or _is_cursor_suppressed:
 		_scan_locked_actors.clear()
 		return
 
@@ -202,7 +203,7 @@ func _refresh_scanner_visuals() -> void:
 func _get_cursor_animation() -> StringName:
 	if _is_register_hovered:
 		return CURSOR_REGISTER_ANIMATION
-	if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+	if Input.is_mouse_button_pressed(SCAN_MOUSE_BUTTON):
 		return CURSOR_SCANNING_ANIMATION
 	if _is_hovering_weighable_product():
 		return CURSOR_FRUIT_ANIMATION

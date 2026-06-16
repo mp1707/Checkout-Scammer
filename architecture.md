@@ -76,7 +76,7 @@ Wichtige Szenen:
 - `TableActor` (Basisklasse): gemeinsame Drag-/Slot-/Finish-API fuer Produkt- und Coupon-Actors.
 - `CheckoutTable`: mittlerer Kassentisch als Root der spielbaren Flaeche.
 - `ProductScatterView`: verstreute sichtbare Objekt-Slots im rechten Tischbereich, Spawn-von-rechts-Animationen, Slot-Marker.
-- `ProductActor`: Rechtsklick-Drag, Rotation, Buchungszahl, Schatten und Produktfeedback. Scanner-Kontakte kommen zentral von `ScannerStation`.
+- `ProductActor`: Linksklick-Drag, Rotation, Buchungszahl, Schatten und Produktfeedback. Scanner-Kontakte kommen zentral von `ScannerStation`.
 - `ScannerStation`: permanenter Scanner-Cursor mit sichtbarem Scanner-Sprite, animiertem Laser-Hotspot aus `laser.png`, Hotspot exakt am Mauspunkt, Hitbox/Area2D, Hold-Scan-Tracking und SFX-/Feedback-Anker.
 - `RegisterDisplay`: editorseitig platzierbares Kassendisplay im Tisch, zeigt den offenen Betrag des aktuell gebuchten Produktes.
 - `RegisterCheckoutZone`: editorseitig platzierte Kassen-Hitbox zum Erzeugen des Kassenbons.
@@ -178,7 +178,7 @@ Wenn eine Runtime-Erzeugung noetig ist, muss sie eine vorbereitete Scene instanz
 
 Eine Szene hat genau eine Hauptaufgabe:
 
-- `ProductActor`: sammelt Rechtsklick-Drag-/Rotate-Input, zeigt Produktzustand und die Buchungszahl ab `1`.
+- `ProductActor`: sammelt Linksklick-Drag-/Rotate-Input, zeigt Produktzustand und die Buchungszahl ab `1`.
 - `ScannerStation`: folgt dauerhaft der Maus, versteckt den OS-Cursor innerhalb des Spielfensters, stellt ihn beim Verlassen/Fokusverlust wieder her, schaltet die animierten Laser-Cursor-Zustaende nach Zielzustand und zeigt Scannerfeedback.
 - `ProductScatterView`: zeigt Slots verstreut im rechten Tischbereich und animiert neue Objekte von rechts herein.
 - `RegisterCheckoutZone`: meldet den Kassenbon-Abschluss-Intent.
@@ -210,12 +210,12 @@ Keine UI-Komponente bucht Geld, scannt Produkte, veraendert Suspicion oder aktiv
 
 1. `ScannerStation` versteckt den OS-Cursor innerhalb des Spielfensters, stellt ihn beim Verlassen/Fokusverlust wieder her, laesst den Scanner-Cursor dauerhaft der Maus folgen und positioniert den Laser-Hotspot exakt am Mauspunkt.
 2. Das Scanner-Sprite bleibt sichtbar und wird ueber dem Laser-Hotspot gezeichnet; der Laser-Hotspot kommt aus dem editorseitig sichtbaren `AnimatedSprite2D`-Atlas `assets/textures/environment/laser.png`. Scanner-Sprite und Laser-Hotspot liegen immer ueber Gameplay-Objekten und UI-Popups. Waehrend Produkt-Drag wird nur der Laser-Hotspot ausgeblendet.
-3. Gedrueckter Linksklick auf ein Festpreis-Produkt meldet einen Produkt-Scan. Wird Linksklick gehalten, scannt jedes neu beruehrte Festpreis-Produkt einmal.
-4. Bleibt Linksklick gehalten, kann dasselbe Festpreis-Produkt erneut gescannt werden, nachdem der Cursor-Hotspot die Actor-Hitbox aktiv verlassen und danach wieder beruehrt hat. Ein Top-Actor- oder Cursor-Zustandswechsel allein entsperrt keinen Mehrfachscan.
-5. Gedrueckter Linksklick auf einen Coupon aktiviert ihn ehrlich.
-6. Rechtsklick-Drag bewegt Produkte und Coupons; Coupon-Drag in `TrashZone` bleibt Coupon-Scam.
-7. Hovern ueber Obst ohne gedrueckte Scantaste schaltet auf die blaue Chevron-Animation. Bei gedrueckter Scantaste bleibt die rote Cross-with-Laser-Animation aktiv, auch wenn Obst beruehrt wird. Obst wird per Rechtsklick-Drag normal bewegt, ohne Scannerverkauf.
-8. Hovern ueber `RegisterCheckoutZone` schaltet auf die gruene Checkmark-Animation. Gedrueckter Linksklick ausserhalb dieses Sonderzustands schaltet auf die rote Cross-with-Laser-Animation.
+3. Gedrueckter Rechtsklick auf ein Festpreis-Produkt meldet einen Produkt-Scan. Wird Rechtsklick gehalten, scannt jedes neu beruehrte Festpreis-Produkt einmal.
+4. Bleibt Rechtsklick gehalten, kann dasselbe Festpreis-Produkt erneut gescannt werden, nachdem der Cursor-Hotspot die Actor-Hitbox aktiv verlassen und danach wieder beruehrt hat. Ein Top-Actor- oder Cursor-Zustandswechsel allein entsperrt keinen Mehrfachscan.
+5. Gedrueckter Rechtsklick auf einen Coupon aktiviert ihn ehrlich.
+6. Linksklick-Drag bewegt Produkte und Coupons; Coupon-Drag in `TrashZone` bleibt Coupon-Scam.
+7. Hovern ueber Obst ohne gedrueckte Scantaste schaltet auf die blaue Chevron-Animation. Bei gedrueckter Scantaste bleibt die rote Cross-with-Laser-Animation aktiv, auch wenn Obst beruehrt wird. Obst wird per Linksklick-Drag normal bewegt, ohne Scannerverkauf.
+8. Hovern ueber `RegisterCheckoutZone` schaltet auf die gruene Checkmark-Animation. Gedrueckter Rechtsklick ausserhalb dieses Sonderzustands schaltet auf die rote Cross-with-Laser-Animation.
 9. `RunController` baut fuer Produkt-Scans einen `ScanRequest` mit Actor-ID, Kontaktposition, Rotation/Hit-Details und aktuellem Runtime-State.
 10. `ScanSystem` entscheidet, ob der Produkt-Scan gueltig ist. Wiegbare Produkte werden vor dem Caught-Roll abgelehnt.
 11. Bei Mehrfachscan fragt `ScanSystem` ueber den gemeinsamen Charge-Pfad den `SuspicionSystem`-Caught-Roll gegen die Suspicion-Kurve des aktiven Kundentyps ab.
@@ -247,7 +247,7 @@ Keine UI-Komponente bucht Geld, scannt Produkte, veraendert Suspicion oder aktiv
 1. Erfolgreiche Scans und Wiegungen erhoehen nur den offenen Produktbetrag und `ProductInstance.scan_count`; sie buchen noch kein Geld in die Kasse.
 2. Ab `scan_count >= 1` zeigt `ProductActor` rechts unten am Sprite eine kleine Buchungszahl.
 3. Haelt der Spieler den Scanner ueber `RegisterCheckoutZone`, zeigt `ScannerStation` die gruene Checkmark-Animation.
-4. Linksklick auf `RegisterCheckoutZone` oeffnet ein Confirm-Popup ueber `HudRoot`.
+4. Rechtsklick auf `RegisterCheckoutZone` oeffnet ein Confirm-Popup ueber `HudRoot`.
 5. Bei Nein wird nur das Popup geschlossen; der Kunde bleibt aktiv.
 6. Bei Ja baut `ReceiptBuilder` aus allen sichtbaren Produkten mit `scan_count > 0` und offenem Betrag die Bon-Zeilen.
 7. Mehrfach gebuchte Produkte erscheinen mehrfach auf dem Bon; zweite und weitere Zeilen derselben Produktinstanz werden leicht hervorgehoben.

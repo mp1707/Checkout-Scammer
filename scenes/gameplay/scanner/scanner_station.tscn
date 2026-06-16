@@ -160,14 +160,14 @@ root_node = NodePath("../..")
 
 [node name="ScannerSprite" type="Sprite2D" parent="ScannerCursorRoot" unique_id=1837823295]
 z_index = 1
-position = Vector2(0, 58)
+position = Vector2(0, 84)
 texture = ExtResource("4_scanner")
 
 [node name="LaserCursorSprite" type="AnimatedSprite2D" parent="ScannerCursorRoot" unique_id=402925832]
 texture_filter = 1
 position = Vector2(-16, -16)
 sprite_frames = SubResource("SpriteFrames_laser_cursor")
-animation = &"red_cross"
+animation = &"red_cross_laser"
 centered = false
 
 [node name="HitArea" type="Area2D" parent="ScannerCursorRoot" unique_id=1721715330]

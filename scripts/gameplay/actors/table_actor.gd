@@ -13,6 +13,7 @@ const Z_LAYER_IDLE: int = 0
 const Z_LAYER_ON_SCALE: int = 40
 const Z_LAYER_DRAGGED: int = 100
 const Z_LAYER_FINISHING: int = 120
+const DRAG_MOUSE_BUTTON: MouseButton = MOUSE_BUTTON_LEFT
 
 @export var interaction_area: Area2D
 
@@ -89,7 +90,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	var mouse_button_event: InputEventMouseButton = event as InputEventMouseButton
 	if mouse_button_event != null:
-		if mouse_button_event.button_index == MOUSE_BUTTON_RIGHT and not mouse_button_event.pressed:
+		if mouse_button_event.button_index == DRAG_MOUSE_BUTTON and not mouse_button_event.pressed:
 			_end_drag(mouse_button_event.position.round())
 			get_viewport().set_input_as_handled()
 			return
@@ -203,10 +204,7 @@ func _on_interaction_area_input_event(_viewport: Viewport, event: InputEvent, _s
 	var mouse_button_event: InputEventMouseButton = event as InputEventMouseButton
 	if mouse_button_event == null:
 		return
-	if mouse_button_event.button_index == MOUSE_BUTTON_LEFT and mouse_button_event.pressed:
-		get_viewport().set_input_as_handled()
-		return
-	if mouse_button_event.button_index == MOUSE_BUTTON_RIGHT and mouse_button_event.pressed:
+	if mouse_button_event.button_index == DRAG_MOUSE_BUTTON and mouse_button_event.pressed:
 		_start_drag(mouse_button_event.position.round())
 		get_viewport().set_input_as_handled()
 

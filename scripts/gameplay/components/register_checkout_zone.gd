@@ -6,6 +6,8 @@ signal hover_changed(is_hovered: bool)
 
 @export var checkout_anchor: Marker2D
 
+const CHECKOUT_MOUSE_BUTTON: MouseButton = MOUSE_BUTTON_RIGHT
+
 var _is_hovered: bool = false
 
 
@@ -35,7 +37,7 @@ func _on_input_event(_viewport: Viewport, event: InputEvent, _shape_idx: int) ->
 	var mouse_button_event: InputEventMouseButton = event as InputEventMouseButton
 	if mouse_button_event == null:
 		return
-	if mouse_button_event.button_index != MOUSE_BUTTON_LEFT or not mouse_button_event.pressed:
+	if mouse_button_event.button_index != CHECKOUT_MOUSE_BUTTON or not mouse_button_event.pressed:
 		return
 
 	checkout_requested.emit()

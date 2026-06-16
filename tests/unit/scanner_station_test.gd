@@ -14,9 +14,28 @@ func _initialize() -> void:
 
 
 func _run() -> void:
+	_test_scanner_controls_use_right_scan_and_left_drag()
 	_test_scan_lock_survives_while_actor_still_overlaps()
 	_test_scan_lock_survives_physics_overlap_gap_at_hitbox_edge()
 	_finish_suite("Scanner station tests")
+
+
+func _test_scanner_controls_use_right_scan_and_left_drag() -> void:
+	_expect_equal_int(
+		int(MOUSE_BUTTON_RIGHT),
+		int(ScannerStation.SCAN_MOUSE_BUTTON),
+		"ScannerStation uses right mouse button for scanning"
+	)
+	_expect_equal_int(
+		int(MOUSE_BUTTON_LEFT),
+		int(TableActor.DRAG_MOUSE_BUTTON),
+		"TableActor uses left mouse button for dragging products and coupons"
+	)
+	_expect_equal_int(
+		int(MOUSE_BUTTON_RIGHT),
+		int(RegisterCheckoutZone.CHECKOUT_MOUSE_BUTTON),
+		"RegisterCheckoutZone uses the scanner button for checkout"
+	)
 
 
 func _test_scan_lock_survives_while_actor_still_overlaps() -> void:
