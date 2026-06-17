@@ -61,8 +61,11 @@
 - Das Scanner-Sprite bleibt sichtbar und sitzt unterhalb des Laser-Hotspots.
 - Der Laser-Cursor nutzt vier animierte Zustände aus `assets/textures/environment/laser.png`.
 - Scanner-Sprite und Laser-Cursor liegen immer über Produkt-Sprites, Waagentexten und Popups; das Scanner-Sprite wird über dem Laser gezeichnet.
-- Rechtsklick auf ein Festpreis-Produkt scannt dieses Produkt.
-- Hält man Rechtsklick gedrückt, scannt jedes neu berührte Festpreis-Produkt einmal.
+- Rechtsklick auf ein Festpreis-Produkt startet einen 2-Sekunden-Scan.
+- Während des Scans muss der Spieler Rechtsklick halten und den Laser-Hotspot auf dem Produkt-Sprite halten.
+- Lässt der Spieler Rechtsklick los, bewegt den Hotspot vom Sprite oder unterbricht den Laser durch ein anderes Top-Target, bricht der Scan ab.
+- Während des Scans zeigt das Produkt oben links am Sprite den Ladekreis aus `assets/textures/ui/loading_circle.png` in 0.5x-Größe.
+- Hält man Rechtsklick gedrückt, kann jedes neu berührte Festpreis-Produkt nach seiner eigenen 2-Sekunden-Dauer einmal gescannt werden.
 - Bleibt Rechtsklick gedrückt, kann dasselbe Festpreis-Produkt erneut gescannt werden, wenn der Cursor-Hotspot dessen Hitbox aktiv verlässt und wieder berührt.
 - Der rote Cross-with-Laser-Zustand ist nur sichtbar, während Rechtsklick gedrückt ist.
 - Beim erfolgreichen Scan pulst der Laser-Cursor kräftiger.
@@ -70,7 +73,7 @@
 - Hält man den Laser-Cursor über Obst, wird die blaue Chevron-Animation angezeigt, solange die Scantaste nicht gedrückt ist.
 - Wird die Scantaste gehalten, bleibt der rote Cross-with-Laser-Zustand als kontinuierlicher Scanvorgang aktiv, auch über Obst.
 - Obst ist nicht scannerverkaufbar. Linksklick-Drag bewegt Obst normal; während Drag verschwindet nur der Laser-Cursor, das Scanner-Sprite bleibt sichtbar.
-- Coupons werden per Rechtsklick mit dem Handscanner ehrlich aktiviert.
+- Coupons werden per 2-Sekunden-Rechtsklick-Hold mit dem Handscanner ehrlich aktiviert und zeigen dabei denselben Ladekreis.
 
 ### Waage
 
@@ -79,12 +82,15 @@
 - Die Waage ist eine eigene Drop-Zone und akzeptiert immer nur ein wiegbares Produkt gleichzeitig.
 - Wenn Obst auf die Waage gelegt wird, spielt die Waage die Press-Animation aus `waage_sheet.png`.
 - Solange Obst auf der Waage liegt, bleibt die Waage visuell belastet.
-- Das Ablegen auf der Waage berechnet direkt den Betrag aus Gewicht, Kilopreis, Coupons und Stickern.
+- Das Ablegen auf der Waage startet eine 2-Sekunden-Wiegung.
+- Während der Wiegung zeigt das Obst oben links am Sprite den Ladekreis aus `assets/textures/ui/loading_circle.png` in 0.5x-Größe.
+- Wird das Obst vor Ablauf der 2 Sekunden von der Waage genommen, bricht die Wiegung ab und es wird kein Betrag berechnet.
+- Nach vollständigen 2 Sekunden berechnet die Waage den Betrag aus Gewicht, Kilopreis, Coupons und Stickern.
 - Der berechnete Betrag erscheint im Kassendisplay und wird zum offenen Verkaufsbetrag des Obstes addiert.
 - Obst kann mehrfach gewogen werden.
 - Zum mehrfachen Buchen kann Obst mit der Maus von der Waage hochgehoben und erneut abgelegt werden.
 - Während das Obst hochgehoben wird, verschwindet der Betrag aus dem Kassendisplay; der offene Betrag bleibt am Obst gespeichert.
-- Wird dasselbe Obst später erneut gewogen, erhöht sich sein aktueller offener Verkaufsbetrag erneut.
+- Wird dasselbe Obst später erneut vollständig gewogen, erhöht sich sein aktueller offener Verkaufsbetrag erneut.
 - Wird ein Sticker auf Obst geklebt, das gerade auf der Waage liegt, aktualisiert sich der offene Verkaufsbetrag im Kassendisplay sofort.
 - Die erste Wiegung ist sicher.
 - Ab der zweiten Wiegung desselben Obstes läuft derselbe Suspicion-/Caught-Pfad wie bei Mehrfachscans.
@@ -274,7 +280,7 @@ Jeder Kunde hat einen Typ. Der Typ bestimmt, aus welchem Preisbereich des aktuel
   - in den Müll geworfen werden, falls das Produkt oder Objekt dafür gedacht ist
 - Obst kann:
   - auf die Waage gelegt werden
-  - beim Ablegen auf der Waage abgerechnet werden
+  - nach 2 Sekunden auf der Waage abgerechnet werden
   - mehrfach gewogen werden
   - in den Müll geworfen werden
 - Obst bekommt beim Erstellen der Produktinstanz ein deterministisches zufälliges Gewicht.
@@ -461,13 +467,13 @@ Out of scope für den Prototyp:
 - Falls für diesen Kunden ein Coupon aktiv ist, liegt er zusätzlich zuerst in der Produktfläche.
 - Der Spieler nimmt ein Produkt von der Produktfläche.
 - Der Handscanner ist permanent der Cursor.
-- Festpreis-Produkte werden per Rechtsklick mit dem Laser-Cursor gescannt.
+- Festpreis-Produkte werden per 2-Sekunden-Rechtsklick-Hold mit dem Laser-Cursor gescannt.
 - Ein gültiger Scan löst aus:
   - Beep
   - Verkaufsbetrag im Kassendisplay erhöht sich
   - Laser-Cursor-Feedback
 - Obst wird mit dem Scanner-Cursor gedraggt und auf die Waage gelegt.
-- Danach kann der Spieler das Festpreis-Produkt nochmal scannen oder Obst erneut wiegen.
+- Danach kann der Spieler das Festpreis-Produkt nochmal scannen oder Obst erneut vollständig wiegen.
 - Ab der ersten Buchung zeigt das Produkt rechts unten seine Buchungszahl.
 - Wenn der Einkauf fertig ist, hält der Spieler den Scanner über die Kasse und klickt.
 - Bei Ja im Confirm-Popup wird der Kassenbon erzeugt, die Bon-Summe gebucht und der Bon angezeigt.
@@ -484,9 +490,13 @@ Out of scope für den Prototyp:
 ## Scan-Regeln
 
 - Ein Scan zählt nur, wenn:
-  - der Spieler kurz auf ein scanbares Objekt linksklickt
+  - der Spieler Rechtsklick 2 Sekunden lang gedrückt hält
+  - der Laser-Hotspot währenddessen auf dem Sprite des scanbaren Objekts bleibt
   - das getroffene Objekt ein Festpreis-Produkt oder Coupon ist
 - Kein Scan zählt, wenn:
+  - der Spieler Rechtsklick vor Ablauf der 2 Sekunden loslässt
+  - der Laser-Hotspot das Sprite verlässt
+  - ein anderes Objekt das Top-Target unter dem Laser wird
   - der Spieler das Produkt nur zieht
   - das Produkt Obst bzw. ein wiegbares Produkt ist
 - Dadurch wird der Scan-Moment klarer und absichtlicher.
@@ -503,7 +513,7 @@ Out of scope für den Prototyp:
   - im Müll-Loch
   - auf der Waage, wenn es Obst ist
   - optional zurück auf dem Tisch, falls nötig
-- Rechtsklick auf Festpreis-Produkte scannt.
+- Rechtsklick-Hold auf Festpreis-Produkte scannt nach 2 Sekunden.
 - Linksklick-Drag bewegt Produkte und Coupons.
 - Obst kann mit dem Scanner-Cursor per Linksklick normal gedraggt werden; während des Drags verschwindet nur der Laser-Cursor, das Scanner-Sprite bleibt sichtbar.
 - Der offene Verkaufsbetrag wird erst beim Erzeugen des Kassenbons zum Total-Wert gebucht.
@@ -556,9 +566,10 @@ Für den ersten spielbaren Prototyp ist wichtig:
 - 10 Produkte pro Kunde
 - Alle Kundenprodukte direkt sichtbar auf der Matte
 - Handscanner als permanenter Cursor mit sichtbarem Scanner-Sprite und rotem Laser-Default-Zustand
-- Scannen per Rechtsklick auf Festpreis-Produkte und Coupons
+- Scannen per 2-Sekunden-Rechtsklick-Hold auf Festpreis-Produkte und Coupons
 - Obst ist wiegbar und nicht scanbar
-- Waage im Tischbereich
+- Waage im Tischbereich mit 2-Sekunden-Wiegung
+- Ladekreis oben links am Sprite für laufende Scans und Wiegungen
 - Kassenbon-Abschluss über Register-Hitbox
 - Müll-Loch rechts unten
 - Kundensignal rechts oben mit vier Kundentypen und je drei Suspicion-Sprites

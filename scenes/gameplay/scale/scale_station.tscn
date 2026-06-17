@@ -1,10 +1,10 @@
-[gd_scene load_steps=6 format=3 uid="uid://bsvrb5lcllis3"]
+[gd_scene format=3 uid="uid://bsvrb5lcllis3"]
 
 [ext_resource type="Script" uid="uid://hr8jsyptv8dr" path="res://scripts/gameplay/components/scale_station.gd" id="1_scale_station"]
 [ext_resource type="Texture2D" uid="uid://dhx3pw4vq5cjg" path="res://assets/textures/environment/waage_sheet.png" id="2_waage_sheet"]
 [ext_resource type="FontFile" uid="uid://ilorfjrobin5" path="res://assets/fonts/PixelOperator8.ttf" id="3_pixel_font"]
 [ext_resource type="PackedScene" path="res://scenes/vfx/scale_impact_vfx.tscn" id="4_scale_impact"]
-[ext_resource type="AudioStream" path="res://assets/audio/sfx/ui/weight_drop.wav" id="5_weight_drop"]
+[ext_resource type="AudioStream" uid="uid://hmv3hq07c1m5" path="res://assets/audio/sfx/ui/weight_drop.wav" id="5_weight_drop"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_scale_drop"]
 size = Vector2(76, 54)
@@ -21,11 +21,11 @@ drop_sound_player = NodePath("DropSoundPlayer")
 texture = ExtResource("2_waage_sheet")
 hframes = 3
 
-[node name="ImpactVfx" parent="." instance=ExtResource("4_scale_impact")]
+[node name="ImpactVfx" parent="." unique_id=1089680784 instance=ExtResource("4_scale_impact")]
 z_index = 20
 position = Vector2(0, -14)
 
-[node name="DropSoundPlayer" type="AudioStreamPlayer2D" parent="."]
+[node name="DropSoundPlayer" type="AudioStreamPlayer2D" parent="." unique_id=1788040180]
 stream = ExtResource("5_weight_drop")
 volume_db = -3.0
 

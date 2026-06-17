@@ -210,28 +210,30 @@ Keine UI-Komponente bucht Geld, scannt Produkte, veraendert Suspicion oder aktiv
 
 1. `ScannerStation` versteckt den OS-Cursor innerhalb des Spielfensters, stellt ihn beim Verlassen/Fokusverlust wieder her, laesst den Scanner-Cursor dauerhaft der Maus folgen und positioniert den Laser-Hotspot exakt am Mauspunkt.
 2. Das Scanner-Sprite bleibt sichtbar und wird ueber dem Laser-Hotspot gezeichnet; der Laser-Hotspot kommt aus dem editorseitig sichtbaren `AnimatedSprite2D`-Atlas `assets/textures/environment/laser.png`. Scanner-Sprite und Laser-Hotspot liegen immer ueber Gameplay-Objekten und UI-Popups. Waehrend Produkt-Drag wird nur der Laser-Hotspot ausgeblendet.
-3. Gedrueckter Rechtsklick auf ein Festpreis-Produkt meldet einen Produkt-Scan. Wird Rechtsklick gehalten, scannt jedes neu beruehrte Festpreis-Produkt einmal.
-4. Bleibt Rechtsklick gehalten, kann dasselbe Festpreis-Produkt erneut gescannt werden, nachdem der Cursor-Hotspot die Actor-Hitbox aktiv verlassen und danach wieder beruehrt hat. Ein Top-Actor- oder Cursor-Zustandswechsel allein entsperrt keinen Mehrfachscan.
-5. Gedrueckter Rechtsklick auf einen Coupon aktiviert ihn ehrlich.
-6. Linksklick-Drag bewegt Produkte und Coupons; Coupon-Drag in `TrashZone` bleibt Coupon-Scam.
-7. Hovern ueber Obst ohne gedrueckte Scantaste schaltet auf die blaue Chevron-Animation. Bei gedrueckter Scantaste bleibt die rote Cross-with-Laser-Animation aktiv, auch wenn Obst beruehrt wird. Obst wird per Linksklick-Drag normal bewegt, ohne Scannerverkauf.
-8. Hovern ueber `RegisterCheckoutZone` schaltet auf die gruene Checkmark-Animation. Gedrueckter Rechtsklick ausserhalb dieses Sonderzustands schaltet auf die rote Cross-with-Laser-Animation.
-9. `RunController` baut fuer Produkt-Scans einen `ScanRequest` mit Actor-ID, Kontaktposition, Rotation/Hit-Details und aktuellem Runtime-State.
-10. `ScanSystem` entscheidet, ob der Produkt-Scan gueltig ist. Wiegbare Produkte werden vor dem Caught-Roll abgelehnt.
-11. Bei Mehrfachscan fragt `ScanSystem` ueber den gemeinsamen Charge-Pfad den `SuspicionSystem`-Caught-Roll gegen die Suspicion-Kurve des aktiven Kundentyps ab.
-12. `EconomySystem` berechnet den offenen Festpreis-Betrag und erhoeht `ProductInstance.scan_count`.
-13. `RunController` aktualisiert Runtime-State und sendet Feedback-Events an Presentation: Beep, Laser-Cursor-Impuls, Betrag im Kassendisplay, Buchungszahl am Produkt, Customer-Signal-State.
+3. Gedrueckter Rechtsklick auf ein Festpreis-Produkt startet einen zweisekuendigen Hold-Scan. Waehrenddessen zeigt der Actor oben links am Sprite den 0.5x-Ladekreis aus `assets/textures/ui/loading_circle.png`.
+4. Der Hold-Scan wird abgebrochen, wenn Rechtsklick losgelassen wird, der Cursor-Hotspot das Sprite verlaesst, ein anderer Actor Top-Target wird oder der Scanner-Cursor unterdrueckt wird. Erst nach vollstaendigen zwei Sekunden meldet `ScannerStation` den Produkt-Scan.
+5. Wird Rechtsklick weiter gehalten, kann jedes neu beruehrte Festpreis-Produkt nach seiner eigenen zweisekuendigen Hold-Dauer einmal gescannt werden. Dasselbe Festpreis-Produkt kann erneut gescannt werden, nachdem der Cursor-Hotspot die Actor-Hitbox aktiv verlassen und danach wieder beruehrt hat. Ein Top-Actor- oder Cursor-Zustandswechsel allein entsperrt keinen Mehrfachscan.
+6. Gedrueckter Rechtsklick auf einen Coupon startet denselben zweisekuendigen Hold-Scan und aktiviert ihn nach erfolgreichem Abschluss ehrlich.
+7. Linksklick-Drag bewegt Produkte und Coupons; Coupon-Drag in `TrashZone` bleibt Coupon-Scam.
+8. Hovern ueber Obst ohne gedrueckte Scantaste schaltet auf die blaue Chevron-Animation. Bei gedrueckter Scantaste bleibt die rote Cross-with-Laser-Animation aktiv, auch wenn Obst beruehrt wird. Obst wird per Linksklick-Drag normal bewegt, ohne Scannerverkauf.
+9. Hovern ueber `RegisterCheckoutZone` schaltet auf die gruene Checkmark-Animation. Gedrueckter Rechtsklick ausserhalb dieses Sonderzustands schaltet auf die rote Cross-with-Laser-Animation.
+10. `RunController` baut fuer abgeschlossene Produkt-Scans einen `ScanRequest` mit Actor-ID, Kontaktposition, Rotation/Hit-Details und aktuellem Runtime-State.
+11. `ScanSystem` entscheidet, ob der Produkt-Scan gueltig ist. Wiegbare Produkte werden vor dem Caught-Roll abgelehnt.
+12. Bei Mehrfachscan fragt `ScanSystem` ueber den gemeinsamen Charge-Pfad den `SuspicionSystem`-Caught-Roll gegen die Suspicion-Kurve des aktiven Kundentyps ab.
+13. `EconomySystem` berechnet den offenen Festpreis-Betrag und erhoeht `ProductInstance.scan_count`.
+14. `RunController` aktualisiert Runtime-State und sendet Feedback-Events an Presentation: Beep, Laser-Cursor-Impuls, Betrag im Kassendisplay, Buchungszahl am Produkt, Customer-Signal-State.
 
 ### Wiegen
 
 1. `ProductActor` wird auf `ScaleStation` gedroppt.
-2. `ScaleStation` akzeptiert nur ein wiegbares Produkt gleichzeitig und meldet den Drop an `CheckoutTable`.
-3. `RunController` setzt den aktiven Waagen-Actor und nutzt `ScanSystem.evaluate_product_charge_attempt`, also denselben First-/Duplicate-/Caught-Pfad wie beim Scan.
-4. `EconomySystem` berechnet `weight_grams * price_per_kg_cents`, wendet ehrliche Coupons und aktuelle Sticker-Multiplikatoren an und addiert nur den neuen Betrag zum offenen Produktbetrag.
-5. `RunController` aktualisiert Runtime-State und sendet Feedback-Events an Presentation: Waagenfeedback, Betrag im Kassendisplay, Buchungszahl am Produkt, Customer-Signal-State.
-6. Zum Mehrfachbuchen kann der Spieler das Obst von der Waage hochheben und erneut ablegen. Jede weitere Wiegung nutzt den Duplicate-/Caught-Pfad und erhoeht die Suspicion nach dem Caught-Roll auch bei Caught.
-7. Beim Entfernen des Obstes von der Waage wird der Betrag im Kassendisplay ausgeblendet; der offene Betrag bleibt am Produkt.
-8. Wenn ein Sticker auf das aktuell auf der Waage liegende Obst geklebt wird, berechnet `EconomySystem` den offenen Produktbetrag mit den aktuellen Stickern neu und `RunController` aktualisiert das Kassendisplay sofort.
+2. `ScaleStation` akzeptiert nur ein wiegbares Produkt gleichzeitig, startet eine zweisekuendige Wiegung und zeigt waehrenddessen am Actor oben links den 0.5x-Ladekreis aus `assets/textures/ui/loading_circle.png`.
+3. Wird das Produkt vor Ablauf der zwei Sekunden von der Waage genommen, bricht die Wiegung ab und es wird kein Drop-Intent gemeldet.
+4. Nach vollstaendigen zwei Sekunden meldet `ScaleStation` den Drop an `CheckoutTable`. `RunController` setzt den aktiven Waagen-Actor und nutzt `ScanSystem.evaluate_product_charge_attempt`, also denselben First-/Duplicate-/Caught-Pfad wie beim Scan.
+5. `EconomySystem` berechnet `weight_grams * price_per_kg_cents`, wendet ehrliche Coupons und aktuelle Sticker-Multiplikatoren an und addiert nur den neuen Betrag zum offenen Produktbetrag.
+6. `RunController` aktualisiert Runtime-State und sendet Feedback-Events an Presentation: Waagenfeedback, Betrag im Kassendisplay, Buchungszahl am Produkt, Customer-Signal-State.
+7. Zum Mehrfachbuchen kann der Spieler das Obst von der Waage hochheben und erneut ablegen. Jede weitere vollstaendige Wiegung nutzt den Duplicate-/Caught-Pfad und erhoeht die Suspicion nach dem Caught-Roll auch bei Caught.
+8. Beim Entfernen des Obstes von der Waage wird der Betrag im Kassendisplay ausgeblendet; der offene Betrag bleibt am Produkt.
+9. Wenn ein Sticker auf das aktuell auf der Waage liegende Obst geklebt wird, berechnet `EconomySystem` den offenen Produktbetrag mit den aktuellen Stickern neu und `RunController` aktualisiert das Kassendisplay sofort.
 
 ### Caught-Strafen
 

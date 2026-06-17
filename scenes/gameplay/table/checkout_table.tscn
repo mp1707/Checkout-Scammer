@@ -35,21 +35,20 @@ position = Vector2(320, 180)
 texture = ExtResource("8_table")
 
 [node name="ScannerStation" parent="." unique_id=678997339 instance=ExtResource("2_scanner")]
-position = Vector2(0, 0)
 
 [node name="RegisterCheckoutZone" parent="." unique_id=1494708852 instance=ExtResource("4_register")]
-position = Vector2(195, 100)
+position = Vector2(195, 226)
 
 [node name="ScaleStation" parent="." unique_id=306612671 instance=ExtResource("10_scale_station")]
-position = Vector2(334, 157)
+position = Vector2(282, 253)
 
 [node name="RegisterDisplay" type="Control" parent="." unique_id=1105894270 node_paths=PackedStringArray("amount_label")]
 z_index = -40
 anchors_preset = 0
-offset_left = 166.0
-offset_top = 92.0
-offset_right = 224.0
-offset_bottom = 108.0
+offset_left = 165.0
+offset_top = 204.0
+offset_right = 223.0
+offset_bottom = 220.0
 mouse_filter = 2
 script = ExtResource("9_register_display")
 amount_label = NodePath("AmountLabel")
@@ -71,13 +70,13 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="ProductScatterView" parent="." unique_id=364460971 instance=ExtResource("3_product_scatter")]
-position = Vector2(401, 153)
+position = Vector2(416, 158)
 
 [node name="TrashZone" parent="." unique_id=345382906 instance=ExtResource("5_trash")]
 position = Vector2(486, 289)
 
 [node name="CustomerHandView" parent="." unique_id=1485899984 instance=ExtResource("6_hand")]
-position = Vector2(284, 47)
+position = Vector2(187, 48)
 
 [node name="VfxAnchor" type="Marker2D" parent="." unique_id=89939026]
 position = Vector2(320, 146)

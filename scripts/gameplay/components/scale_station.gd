@@ -18,7 +18,11 @@ signal actor_removed(actor: ProductActor)
 @export var impact_vfx: OneShotAnimatedVfx
 @export var drop_sound_player: AudioStreamPlayer2D
 
+const WEIGH_HOLD_DURATION_SECONDS: float = 2.0
+
 var _current_actor: ProductActor
+var _is_weighing_pending: bool = false
+var _pending_weigh_elapsed_seconds: float = 0.0
 var _press_tween: Tween
 var _feedback_tween: Tween
 
@@ -29,6 +33,26 @@ func _ready() -> void:
 	_set_frame(0)
 	if not Engine.is_editor_hint():
 		clear_weight()
+
+
+func _process(delta: float) -> void:
+	if Engine.is_editor_hint() or not _is_weighing_pending:
+		return
+	if _current_actor == null or not is_instance_valid(_current_actor):
+		_cancel_pending_weighing()
+		_current_actor = null
+		_set_frame(0)
+		clear_weight()
+		return
+
+	_pending_weigh_elapsed_seconds += delta
+	_current_actor.show_loading_progress(
+		_pending_weigh_elapsed_seconds / WEIGH_HOLD_DURATION_SECONDS
+	)
+	if _pending_weigh_elapsed_seconds < WEIGH_HOLD_DURATION_SECONDS:
+		return
+
+	_complete_pending_weighing()
 
 
 func try_drop_actor(actor: TableActor) -> bool:
@@ -44,7 +68,7 @@ func try_drop_actor(actor: TableActor) -> bool:
 	_play_press_animation()
 	_play_impact_vfx()
 	_play_drop_sound()
-	actor_dropped.emit(product_actor)
+	_begin_pending_weighing(product_actor)
 	return true
 
 
@@ -53,6 +77,7 @@ func release_actor(actor: TableActor) -> void:
 		return
 
 	var released_actor: ProductActor = _current_actor
+	_cancel_pending_weighing()
 	_current_actor = null
 	_set_frame(0)
 	clear_weight()
@@ -151,6 +176,29 @@ func _play_drop_sound() -> void:
 
 	drop_sound_player.stop()
 	drop_sound_player.play()
+
+
+func _begin_pending_weighing(actor: ProductActor) -> void:
+	_is_weighing_pending = true
+	_pending_weigh_elapsed_seconds = 0.0
+	actor.show_loading_progress(0.0)
+
+
+func _complete_pending_weighing() -> void:
+	if _current_actor == null:
+		_cancel_pending_weighing()
+		return
+
+	var completed_actor: ProductActor = _current_actor
+	_cancel_pending_weighing()
+	actor_dropped.emit(completed_actor)
+
+
+func _cancel_pending_weighing() -> void:
+	if _current_actor != null and is_instance_valid(_current_actor):
+		_current_actor.hide_loading_progress()
+	_is_weighing_pending = false
+	_pending_weigh_elapsed_seconds = 0.0
 
 
 func _play_scale_tint(color: Color, duration: float) -> void:

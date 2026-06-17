@@ -14,8 +14,10 @@ const Z_LAYER_ON_SCALE: int = 40
 const Z_LAYER_DRAGGED: int = 100
 const Z_LAYER_FINISHING: int = 120
 const DRAG_MOUSE_BUTTON: MouseButton = MOUSE_BUTTON_LEFT
+const LOADING_CIRCLE_FRAME_COUNT: int = 24
 
 @export var interaction_area: Area2D
+@export var loading_circle_sprite: Sprite2D
 
 var actor_id: String = ""
 var slot_index: int = -1
@@ -31,6 +33,7 @@ func _ready() -> void:
 		return
 	if not interaction_area.input_event.is_connected(_on_interaction_area_input_event):
 		interaction_area.input_event.connect(_on_interaction_area_input_event)
+	_hide_loading_progress()
 
 
 func get_contact_area() -> Area2D:
@@ -40,6 +43,26 @@ func get_contact_area() -> Area2D:
 func set_interaction_enabled(is_enabled: bool) -> void:
 	if interaction_area != null:
 		interaction_area.input_pickable = is_enabled
+
+
+func show_loading_progress(progress: float) -> void:
+	if loading_circle_sprite == null:
+		return
+
+	loading_circle_sprite.visible = true
+	loading_circle_sprite.hframes = LOADING_CIRCLE_FRAME_COUNT
+	loading_circle_sprite.vframes = 1
+	var clamped_progress: float = clampf(progress, 0.0, 1.0)
+	var frame_index: int = clampi(
+		floori(clamped_progress * float(LOADING_CIRCLE_FRAME_COUNT)),
+		0,
+		LOADING_CIRCLE_FRAME_COUNT - 1
+	)
+	loading_circle_sprite.frame = frame_index
+
+
+func hide_loading_progress() -> void:
+	_hide_loading_progress()
 
 
 func contains_global_point(global_point: Vector2) -> bool:
@@ -178,6 +201,7 @@ func _on_finish_started() -> void:
 func _play_finish_fly(target_global_position: Vector2, finish_duration: float, target_scale: Vector2) -> void:
 	is_held = false
 	_on_finish_started()
+	_hide_loading_progress()
 	if interaction_area != null:
 		interaction_area.input_pickable = false
 		interaction_area.set_deferred("monitorable", false)
@@ -211,6 +235,7 @@ func _on_interaction_area_input_event(_viewport: Viewport, event: InputEvent, _s
 
 func _start_drag(pointer_position: Vector2) -> void:
 	is_held = true
+	_hide_loading_progress()
 	z_index = Z_LAYER_DRAGGED
 	_update_drag_position(pointer_position)
 	drag_started.emit(self)
@@ -231,3 +256,11 @@ func _end_drag(drop_position: Vector2) -> void:
 	z_index = Z_LAYER_IDLE
 	_update_drag_position(drop_position)
 	drag_ended.emit(self, global_position)
+
+
+func _hide_loading_progress() -> void:
+	if loading_circle_sprite == null:
+		return
+
+	loading_circle_sprite.visible = false
+	loading_circle_sprite.frame = 0

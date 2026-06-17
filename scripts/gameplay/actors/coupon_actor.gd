@@ -10,6 +10,8 @@ func _ready() -> void:
 	super()
 	if coupon_sprite == null:
 		push_error("%s is missing required scene reference 'coupon_sprite'." % get_path())
+	if loading_circle_sprite == null:
+		push_error("%s is missing required scene reference 'loading_circle_sprite'." % get_path())
 	_refresh_coupon_id()
 
 

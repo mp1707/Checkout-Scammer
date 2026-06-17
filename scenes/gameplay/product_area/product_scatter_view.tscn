@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" path="res://scenes/gameplay/products/coupon_actor.tscn" id="3_coupon_actor"]
 
 [node name="ProductScatterView" type="Node2D" unique_id=1156285210 node_paths=PackedStringArray("actor_container", "slot_marker_root", "spawn_marker", "exit_marker")]
+position = Vector2(17, 19)
 script = ExtResource("1_scatter")
 actor_container = NodePath("ActorContainer")
 slot_marker_root = NodePath("SlotMarkers")
@@ -22,6 +23,7 @@ offset_right = 46.0
 offset_bottom = -12.0
 mouse_filter = 2
 color = Color(1, 1, 1, 0)
+metadata/_edit_use_anchors_ = true
 
 [node name="SlotGuide1" type="ColorRect" parent="SlotGuides" unique_id=1475845267]
 offset_left = 80.0
@@ -32,60 +34,60 @@ mouse_filter = 2
 color = Color(1, 1, 1, 0)
 
 [node name="SlotGuide2" type="ColorRect" parent="SlotGuides" unique_id=1898052403]
-offset_left = 40.0
-offset_top = 20.0
-offset_right = 76.0
-offset_bottom = 56.0
+offset_left = 47.0
+offset_top = 12.0
+offset_right = 83.0
+offset_bottom = 48.0
 mouse_filter = 2
 color = Color(1, 1, 1, 0)
 
 [node name="SlotGuide3" type="ColorRect" parent="SlotGuides" unique_id=705952222]
-offset_left = 5.0
-offset_top = 3.0
-offset_right = 41.0
-offset_bottom = 39.0
+offset_left = 14.0
+offset_right = 50.0
+offset_bottom = 36.0
 mouse_filter = 2
 color = Color(1, 1, 1, 0)
 
 [node name="SlotMarkers" type="Node2D" parent="." unique_id=240835313]
 
 [node name="Slot0" type="Marker2D" parent="SlotMarkers" unique_id=1031140100]
-position = Vector2(8, -56)
+position = Vector2(-102, -43)
 
 [node name="Slot1" type="Marker2D" parent="SlotMarkers" unique_id=386507171]
-position = Vector2(52, -48)
+position = Vector2(-57, -54)
 
 [node name="Slot2" type="Marker2D" parent="SlotMarkers" unique_id=990131921]
-position = Vector2(100, -42)
+position = Vector2(0, -59)
 
 [node name="Slot3" type="Marker2D" parent="SlotMarkers" unique_id=765269957]
-position = Vector2(18, -20)
+position = Vector2(67, -20)
 
-[node name="Slot4" type="Marker2D" parent="SlotMarkers"]
-position = Vector2(70, -14)
+[node name="Slot4" type="Marker2D" parent="SlotMarkers" unique_id=214418350]
+position = Vector2(50, 16)
 
-[node name="Slot5" type="Marker2D" parent="SlotMarkers"]
-position = Vector2(118, -8)
+[node name="Slot5" type="Marker2D" parent="SlotMarkers" unique_id=1401969623]
+position = Vector2(72, -62)
 
-[node name="Slot6" type="Marker2D" parent="SlotMarkers"]
-position = Vector2(35, 17)
+[node name="Slot6" type="Marker2D" parent="SlotMarkers" unique_id=383692003]
+position = Vector2(16, -19)
 
-[node name="Slot7" type="Marker2D" parent="SlotMarkers"]
-position = Vector2(90, 22)
+[node name="Slot7" type="Marker2D" parent="SlotMarkers" unique_id=1148864983]
+position = Vector2(-50, -18)
 
-[node name="Slot8" type="Marker2D" parent="SlotMarkers"]
-position = Vector2(12, 52)
+[node name="Slot8" type="Marker2D" parent="SlotMarkers" unique_id=1828901180]
+position = Vector2(-34, 14)
 
-[node name="Slot9" type="Marker2D" parent="SlotMarkers"]
-position = Vector2(64, 57)
+[node name="Slot9" type="Marker2D" parent="SlotMarkers" unique_id=786652031]
+position = Vector2(-107, 17)
 
-[node name="Slot10" type="Marker2D" parent="SlotMarkers"]
-position = Vector2(116, 52)
+[node name="Slot10" type="Marker2D" parent="SlotMarkers" unique_id=1495790050]
+position = Vector2(-112, -18)
 
 [node name="SpawnMarker" type="Marker2D" parent="." unique_id=858606807]
-position = Vector2(52, -151)
+position = Vector2(-17, -152)
 
 [node name="ExitMarker" type="Marker2D" parent="." unique_id=1289659766]
-position = Vector2(-40, 0)
+position = Vector2(-2, 58)
 
 [node name="ActorContainer" type="Node2D" parent="." unique_id=1828594367]
+position = Vector2(-17, -19)

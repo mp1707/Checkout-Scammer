@@ -9,6 +9,28 @@ class PointRejectingActor:
 		return false
 
 
+class ScanSignalCapture:
+	extends RefCounted
+
+	var count: int = 0
+	var actor: TableActor
+
+	func on_scan_target_requested(scanned_actor: TableActor, _contact_position: Vector2) -> void:
+		count += 1
+		actor = scanned_actor
+
+
+class ScaleSignalCapture:
+	extends RefCounted
+
+	var count: int = 0
+	var actor: ProductActor
+
+	func on_actor_dropped(dropped_actor: ProductActor) -> void:
+		count += 1
+		actor = dropped_actor
+
+
 func _initialize() -> void:
 	_run.call_deferred()
 
@@ -17,6 +39,10 @@ func _run() -> void:
 	_test_scanner_controls_use_right_scan_and_left_drag()
 	_test_scan_lock_survives_while_actor_still_overlaps()
 	_test_scan_lock_survives_physics_overlap_gap_at_hitbox_edge()
+	_test_hold_scan_completes_after_duration()
+	_test_hold_scan_cancels_when_target_is_interrupted()
+	_test_scale_station_completes_pending_weighing_after_duration()
+	_test_scale_station_cancels_pending_weighing_on_release()
 	_finish_suite("Scanner station tests")
 
 
@@ -110,6 +136,98 @@ func _test_scan_lock_survives_physics_overlap_gap_at_hitbox_edge() -> void:
 	actor.free()
 	scanner_hit_area.free()
 	scanner_station.free()
+
+
+func _test_hold_scan_completes_after_duration() -> void:
+	var scanner_station: ScannerStation = ScannerStation.new()
+	var actor: TableActor = _create_rect_actor(Vector2.ZERO, Vector2(20.0, 20.0))
+	var loading_circle: Sprite2D = Sprite2D.new()
+	actor.add_child(loading_circle)
+	actor.loading_circle_sprite = loading_circle
+
+	var capture: ScanSignalCapture = ScanSignalCapture.new()
+	scanner_station.scan_target_requested.connect(capture.on_scan_target_requested)
+
+	scanner_station._begin_pending_scan(actor)
+	scanner_station._update_pending_scan(ScannerStation.SCAN_HOLD_DURATION_SECONDS * 0.51, actor)
+	_expect_equal_int(0, capture.count, "Hold scan waits before emitting")
+	_expect_true(loading_circle.visible, "Hold scan shows loading circle while pending")
+
+	scanner_station._update_pending_scan(ScannerStation.SCAN_HOLD_DURATION_SECONDS * 0.5, actor)
+	_expect_equal_int(1, capture.count, "Hold scan emits once after the full duration")
+	_expect_true(capture.actor == actor, "Hold scan emits the pending actor")
+	_expect_false(loading_circle.visible, "Hold scan hides loading circle after completion")
+	_expect_equal_int(1, scanner_station._scan_locked_actors.size(), "Hold scan locks the completed actor until it leaves")
+
+	actor.free()
+	scanner_station.free()
+
+
+func _test_hold_scan_cancels_when_target_is_interrupted() -> void:
+	var scanner_station: ScannerStation = ScannerStation.new()
+	var actor: TableActor = _create_rect_actor(Vector2.ZERO, Vector2(20.0, 20.0))
+	var loading_circle: Sprite2D = Sprite2D.new()
+	actor.add_child(loading_circle)
+	actor.loading_circle_sprite = loading_circle
+
+	var capture: ScanSignalCapture = ScanSignalCapture.new()
+	scanner_station.scan_target_requested.connect(capture.on_scan_target_requested)
+
+	scanner_station._begin_pending_scan(actor)
+	scanner_station._update_pending_scan(ScannerStation.SCAN_HOLD_DURATION_SECONDS * 0.5, null)
+	_expect_equal_int(0, capture.count, "Interrupted hold scan does not emit")
+	_expect_true(scanner_station._pending_scan_actor == null, "Interrupted hold scan clears pending actor")
+	_expect_false(loading_circle.visible, "Interrupted hold scan hides loading circle")
+
+	actor.free()
+	scanner_station.free()
+
+
+func _test_scale_station_completes_pending_weighing_after_duration() -> void:
+	var scale_station: ScaleStation = ScaleStation.new()
+	var actor: ProductActor = ProductActor.new()
+	var loading_circle: Sprite2D = Sprite2D.new()
+	actor.add_child(loading_circle)
+	actor.loading_circle_sprite = loading_circle
+	scale_station._current_actor = actor
+
+	var capture: ScaleSignalCapture = ScaleSignalCapture.new()
+	scale_station.actor_dropped.connect(capture.on_actor_dropped)
+
+	scale_station._begin_pending_weighing(actor)
+	scale_station._process(ScaleStation.WEIGH_HOLD_DURATION_SECONDS * 0.51)
+	_expect_equal_int(0, capture.count, "Pending weighing waits before emitting")
+	_expect_true(loading_circle.visible, "Pending weighing shows loading circle")
+
+	scale_station._process(ScaleStation.WEIGH_HOLD_DURATION_SECONDS * 0.5)
+	_expect_equal_int(1, capture.count, "Pending weighing emits once after the full duration")
+	_expect_true(capture.actor == actor, "Pending weighing emits the weighed actor")
+	_expect_false(loading_circle.visible, "Pending weighing hides loading circle after completion")
+
+	actor.free()
+	scale_station.free()
+
+
+func _test_scale_station_cancels_pending_weighing_on_release() -> void:
+	var scale_station: ScaleStation = ScaleStation.new()
+	var actor: ProductActor = ProductActor.new()
+	var loading_circle: Sprite2D = Sprite2D.new()
+	actor.add_child(loading_circle)
+	actor.loading_circle_sprite = loading_circle
+	scale_station._current_actor = actor
+
+	var capture: ScaleSignalCapture = ScaleSignalCapture.new()
+	scale_station.actor_dropped.connect(capture.on_actor_dropped)
+
+	scale_station._begin_pending_weighing(actor)
+	scale_station.release_actor(actor)
+	scale_station._process(ScaleStation.WEIGH_HOLD_DURATION_SECONDS)
+	_expect_equal_int(0, capture.count, "Released pending weighing does not emit")
+	_expect_false(loading_circle.visible, "Released pending weighing hides loading circle")
+	_expect_true(scale_station.get_current_actor() == null, "Released pending weighing clears current actor")
+
+	actor.free()
+	scale_station.free()
 
 
 func _create_rect_actor(global_actor_position: Vector2, shape_size: Vector2) -> TableActor:

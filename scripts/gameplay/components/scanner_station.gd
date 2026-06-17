@@ -16,11 +16,15 @@ const CURSOR_FRUIT_ANIMATION: StringName = &"blue_chevron"
 const CURSOR_SCANNING_ANIMATION: StringName = &"red_cross_laser"
 const CURSOR_REGISTER_ANIMATION: StringName = &"green_checkmark"
 const SCAN_MOUSE_BUTTON: MouseButton = MOUSE_BUTTON_RIGHT
+const SCAN_HOLD_DURATION_SECONDS: float = 2.0
 
 var _is_cursor_suppressed: bool = false
 var _is_register_hovered: bool = false
 var _is_mouse_inside_window: bool = true
 var _scan_locked_actors: Array[TableActor] = []
+var _pending_scan_actor: TableActor
+var _pending_scan_elapsed_seconds: float = 0.0
+var _pending_scan_contact_position: Vector2 = Vector2.ZERO
 var _cursor_tween: Tween
 
 
@@ -61,9 +65,9 @@ func play_success_feedback(scan_count: int) -> void:
 	flash()
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	_update_scanner_cursor(get_viewport().get_mouse_position().round())
-	_update_hold_scan_state()
+	_update_hold_scan_state(delta)
 	_refresh_scanner_visuals()
 
 
@@ -141,8 +145,9 @@ func _update_scanner_cursor(global_mouse_position: Vector2) -> void:
 		scanner_cursor_root.global_position = global_mouse_position
 
 
-func _update_hold_scan_state() -> void:
+func _update_hold_scan_state(delta: float) -> void:
 	if not Input.is_mouse_button_pressed(SCAN_MOUSE_BUTTON) or _is_cursor_suppressed:
+		_cancel_pending_scan()
 		_scan_locked_actors.clear()
 		return
 
@@ -150,13 +155,18 @@ func _update_hold_scan_state() -> void:
 	_prune_scan_locked_actors(pointer_actors)
 
 	var target_actor: TableActor = _find_topmost_actor(pointer_actors)
+	if _pending_scan_actor != null:
+		_update_pending_scan(delta, target_actor)
+		return
+
 	if target_actor == null:
 		return
 	if _scan_locked_actors.has(target_actor):
 		return
+	if not _can_begin_hold_scan(target_actor):
+		return
 
-	_scan_locked_actors.append(target_actor)
-	scan_target_requested.emit(target_actor, get_cursor_hotspot_global_position())
+	_begin_pending_scan(target_actor)
 
 
 func _prune_scan_locked_actors(pointer_actors: Array[TableActor]) -> void:
@@ -167,6 +177,65 @@ func _prune_scan_locked_actors(pointer_actors: Array[TableActor]) -> void:
 			continue
 		if not pointer_actors.has(actor) and not _hit_area_overlaps_actor(actor):
 			_scan_locked_actors.remove_at(index)
+
+
+func _begin_pending_scan(actor: TableActor) -> void:
+	_pending_scan_actor = actor
+	_pending_scan_elapsed_seconds = 0.0
+	_pending_scan_contact_position = get_cursor_hotspot_global_position()
+	actor.show_loading_progress(0.0)
+
+
+func _update_pending_scan(delta: float, target_actor: TableActor) -> void:
+	if _pending_scan_actor == null or not is_instance_valid(_pending_scan_actor):
+		_cancel_pending_scan()
+		return
+	if target_actor != _pending_scan_actor:
+		_cancel_pending_scan()
+		return
+
+	_pending_scan_elapsed_seconds += delta
+	_pending_scan_actor.show_loading_progress(
+		_pending_scan_elapsed_seconds / SCAN_HOLD_DURATION_SECONDS
+	)
+	if _pending_scan_elapsed_seconds < SCAN_HOLD_DURATION_SECONDS:
+		return
+
+	_complete_pending_scan()
+
+
+func _complete_pending_scan() -> void:
+	var completed_actor: TableActor = _pending_scan_actor
+	var completed_contact_position: Vector2 = _pending_scan_contact_position
+	_clear_pending_scan_visual()
+	_pending_scan_actor = null
+	_pending_scan_elapsed_seconds = 0.0
+	_pending_scan_contact_position = Vector2.ZERO
+	if completed_actor == null or not is_instance_valid(completed_actor):
+		return
+
+	_scan_locked_actors.append(completed_actor)
+	scan_target_requested.emit(completed_actor, completed_contact_position)
+
+
+func _cancel_pending_scan() -> void:
+	_clear_pending_scan_visual()
+	_pending_scan_actor = null
+	_pending_scan_elapsed_seconds = 0.0
+	_pending_scan_contact_position = Vector2.ZERO
+
+
+func _clear_pending_scan_visual() -> void:
+	if _pending_scan_actor != null and is_instance_valid(_pending_scan_actor):
+		_pending_scan_actor.hide_loading_progress()
+
+
+func _can_begin_hold_scan(actor: TableActor) -> bool:
+	var product_actor: ProductActor = actor as ProductActor
+	if product_actor != null:
+		return product_actor.product_instance != null and not product_actor.product_instance.is_weighable()
+
+	return actor is CouponActor
 
 
 func _hit_area_overlaps_actor(actor: TableActor) -> bool:

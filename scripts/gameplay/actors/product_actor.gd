@@ -124,6 +124,8 @@ func _validate_required_references() -> void:
 		push_error("%s is missing required scene reference 'count_label'." % get_path())
 	if collision_shape == null:
 		push_error("%s is missing required scene reference 'collision_shape'." % get_path())
+	if loading_circle_sprite == null:
+		push_error("%s is missing required scene reference 'loading_circle_sprite'." % get_path())
 
 
 ## Reads the authored collision size from the scene exactly once, before the
