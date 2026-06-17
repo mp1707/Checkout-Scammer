@@ -61,11 +61,11 @@
 - Das Scanner-Sprite bleibt sichtbar und sitzt unterhalb des Laser-Hotspots.
 - Der Laser-Cursor nutzt vier animierte Zustände aus `assets/textures/environment/laser.png`.
 - Scanner-Sprite und Laser-Cursor liegen immer über Produkt-Sprites, Waagentexten und Popups; das Scanner-Sprite wird über dem Laser gezeichnet.
-- Rechtsklick auf ein Festpreis-Produkt startet einen 2-Sekunden-Scan.
+- Rechtsklick auf ein Festpreis-Produkt startet einen 1,5-Sekunden-Scan.
 - Während des Scans muss der Spieler Rechtsklick halten und den Laser-Hotspot auf dem Produkt-Sprite halten.
 - Lässt der Spieler Rechtsklick los, bewegt den Hotspot vom Sprite oder unterbricht den Laser durch ein anderes Top-Target, bricht der Scan ab.
-- Während des Scans zeigt das Produkt oben links am Sprite den Ladekreis aus `assets/textures/ui/loading_circle.png` in 0.5x-Größe.
-- Hält man Rechtsklick gedrückt, kann jedes neu berührte Festpreis-Produkt nach seiner eigenen 2-Sekunden-Dauer einmal gescannt werden.
+- Während des Scans zeigt das Produkt oben rechts am Sprite den Ladekreis aus `assets/textures/ui/loading_circle.png` in 0.5x-Größe.
+- Hält man Rechtsklick gedrückt, kann jedes neu berührte Festpreis-Produkt nach seiner eigenen 1,5-Sekunden-Dauer einmal gescannt werden.
 - Bleibt Rechtsklick gedrückt, kann dasselbe Festpreis-Produkt erneut gescannt werden, wenn der Cursor-Hotspot dessen Hitbox aktiv verlässt und wieder berührt.
 - Der rote Cross-with-Laser-Zustand ist nur sichtbar, während Rechtsklick gedrückt ist.
 - Beim erfolgreichen Scan pulst der Laser-Cursor kräftiger.
@@ -73,7 +73,7 @@
 - Hält man den Laser-Cursor über Obst, wird die blaue Chevron-Animation angezeigt, solange die Scantaste nicht gedrückt ist.
 - Wird die Scantaste gehalten, bleibt der rote Cross-with-Laser-Zustand als kontinuierlicher Scanvorgang aktiv, auch über Obst.
 - Obst ist nicht scannerverkaufbar. Linksklick-Drag bewegt Obst normal; während Drag verschwindet nur der Laser-Cursor, das Scanner-Sprite bleibt sichtbar.
-- Coupons werden per 2-Sekunden-Rechtsklick-Hold mit dem Handscanner ehrlich aktiviert und zeigen dabei denselben Ladekreis.
+- Coupons werden per 1,5-Sekunden-Rechtsklick-Hold mit dem Handscanner ehrlich aktiviert und zeigen dabei denselben Ladekreis.
 
 ### Waage
 
@@ -83,7 +83,7 @@
 - Wenn Obst auf die Waage gelegt wird, spielt die Waage die Press-Animation aus `waage_sheet.png`.
 - Solange Obst auf der Waage liegt, bleibt die Waage visuell belastet.
 - Das Ablegen auf der Waage startet eine 2-Sekunden-Wiegung.
-- Während der Wiegung zeigt das Obst oben links am Sprite den Ladekreis aus `assets/textures/ui/loading_circle.png` in 0.5x-Größe.
+- Während der Wiegung zeigt das Obst oben rechts am Sprite den Ladekreis aus `assets/textures/ui/loading_circle.png` in 0.5x-Größe.
 - Wird das Obst vor Ablauf der 2 Sekunden von der Waage genommen, bricht die Wiegung ab und es wird kein Betrag berechnet.
 - Nach vollständigen 2 Sekunden berechnet die Waage den Betrag aus Gewicht, Kilopreis, Coupons und Stickern.
 - Der berechnete Betrag erscheint im Kassendisplay und wird zum offenen Verkaufsbetrag des Obstes addiert.
@@ -467,7 +467,7 @@ Out of scope für den Prototyp:
 - Falls für diesen Kunden ein Coupon aktiv ist, liegt er zusätzlich zuerst in der Produktfläche.
 - Der Spieler nimmt ein Produkt von der Produktfläche.
 - Der Handscanner ist permanent der Cursor.
-- Festpreis-Produkte werden per 2-Sekunden-Rechtsklick-Hold mit dem Laser-Cursor gescannt.
+- Festpreis-Produkte werden per 1,5-Sekunden-Rechtsklick-Hold mit dem Laser-Cursor gescannt.
 - Ein gültiger Scan löst aus:
   - Beep
   - Verkaufsbetrag im Kassendisplay erhöht sich
@@ -490,11 +490,11 @@ Out of scope für den Prototyp:
 ## Scan-Regeln
 
 - Ein Scan zählt nur, wenn:
-  - der Spieler Rechtsklick 2 Sekunden lang gedrückt hält
+  - der Spieler Rechtsklick 1,5 Sekunden lang gedrückt hält
   - der Laser-Hotspot währenddessen auf dem Sprite des scanbaren Objekts bleibt
   - das getroffene Objekt ein Festpreis-Produkt oder Coupon ist
 - Kein Scan zählt, wenn:
-  - der Spieler Rechtsklick vor Ablauf der 2 Sekunden loslässt
+  - der Spieler Rechtsklick vor Ablauf der 1,5 Sekunden loslässt
   - der Laser-Hotspot das Sprite verlässt
   - ein anderes Objekt das Top-Target unter dem Laser wird
   - der Spieler das Produkt nur zieht
@@ -513,7 +513,7 @@ Out of scope für den Prototyp:
   - im Müll-Loch
   - auf der Waage, wenn es Obst ist
   - optional zurück auf dem Tisch, falls nötig
-- Rechtsklick-Hold auf Festpreis-Produkte scannt nach 2 Sekunden.
+- Rechtsklick-Hold auf Festpreis-Produkte scannt nach 1,5 Sekunden.
 - Linksklick-Drag bewegt Produkte und Coupons.
 - Obst kann mit dem Scanner-Cursor per Linksklick normal gedraggt werden; während des Drags verschwindet nur der Laser-Cursor, das Scanner-Sprite bleibt sichtbar.
 - Der offene Verkaufsbetrag wird erst beim Erzeugen des Kassenbons zum Total-Wert gebucht.
@@ -566,10 +566,10 @@ Für den ersten spielbaren Prototyp ist wichtig:
 - 10 Produkte pro Kunde
 - Alle Kundenprodukte direkt sichtbar auf der Matte
 - Handscanner als permanenter Cursor mit sichtbarem Scanner-Sprite und rotem Laser-Default-Zustand
-- Scannen per 2-Sekunden-Rechtsklick-Hold auf Festpreis-Produkte und Coupons
+- Scannen per 1,5-Sekunden-Rechtsklick-Hold auf Festpreis-Produkte und Coupons
 - Obst ist wiegbar und nicht scanbar
 - Waage im Tischbereich mit 2-Sekunden-Wiegung
-- Ladekreis oben links am Sprite für laufende Scans und Wiegungen
+- Ladekreis oben rechts am Sprite für laufende Scans und Wiegungen
 - Kassenbon-Abschluss über Register-Hitbox
 - Müll-Loch rechts unten
 - Kundensignal rechts oben mit vier Kundentypen und je drei Suspicion-Sprites

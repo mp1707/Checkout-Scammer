@@ -1,17 +1,19 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene format=3 uid="uid://csdogl8nsuik2"]
 
-[ext_resource type="Script" path="res://scripts/gameplay/actors/product_actor.gd" id="1_product_actor"]
-[ext_resource type="Resource" path="res://content/ui/checkout_theme.tres" id="2_theme"]
-[ext_resource type="PackedScene" path="res://scenes/gameplay/stickers/sticker_visual.tscn" id="3_sticker_visual"]
-[ext_resource type="AudioStream" path="res://assets/audio/sfx/ui/sticker_apply.wav" id="4_sticker_apply"]
-[ext_resource type="Texture2D" path="res://assets/textures/ui/loading_circle.png" id="5_loading_circle"]
+[ext_resource type="Script" uid="uid://bamw371oyuxci" path="res://scripts/gameplay/actors/product_actor.gd" id="1_product_actor"]
+[ext_resource type="AudioStream" uid="uid://djk7o84b4yath" path="res://assets/audio/sfx/ui/sticker_apply.wav" id="4_sticker_apply"]
+[ext_resource type="Texture2D" uid="uid://bykl7dbftuf8g" path="res://assets/textures/ui/loading_circle.png" id="5_loading_circle"]
+[ext_resource type="Texture2D" uid="uid://d1wfnvmpifamv" path="res://assets/textures/products/products_sheet.png" id="6_products_sheet"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_product_preview"]
+atlas = ExtResource("6_products_sheet")
+region = Rect2(0, 0, 32, 32)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_product_pick"]
 size = Vector2(32, 32)
 
-[node name="ProductActor" type="Node2D" node_paths=PackedStringArray("product_sprite", "shadow_sprite", "sprite_root", "sticker_layer", "count_label", "collision_shape", "animation_player", "sticker_apply_player", "interaction_area", "loading_circle_sprite")]
+[node name="ProductActor" type="Node2D" unique_id=904052832 node_paths=PackedStringArray("product_sprite", "shadow_sprite", "sprite_root", "sticker_layer", "count_label", "collision_shape", "animation_player", "sticker_apply_player", "interaction_area", "loading_circle_sprite")]
 script = ExtResource("1_product_actor")
-theme_resource = ExtResource("2_theme")
 product_sprite = NodePath("SpriteRoot/ProductSprite")
 shadow_sprite = NodePath("ShadowAnchor/ShadowSprite")
 sprite_root = NodePath("SpriteRoot")
@@ -20,23 +22,24 @@ count_label = NodePath("SpriteRoot/CountLabel")
 collision_shape = NodePath("InteractionArea/CollisionShape2D")
 animation_player = NodePath("AnimationPlayer")
 sticker_apply_player = NodePath("StickerApplyPlayer")
-sticker_visual_scene = ExtResource("3_sticker_visual")
 interaction_area = NodePath("InteractionArea")
 loading_circle_sprite = NodePath("LoadingCircleSprite")
 
-[node name="ShadowAnchor" type="Node2D" parent="."]
+[node name="ShadowAnchor" type="Node2D" parent="." unique_id=1452311745]
 position = Vector2(2, 3)
 
-[node name="ShadowSprite" type="Sprite2D" parent="ShadowAnchor"]
+[node name="ShadowSprite" type="Sprite2D" parent="ShadowAnchor" unique_id=1955387439]
 modulate = Color(0.054902, 0.027451, 0.105882, 0.42)
+texture = SubResource("AtlasTexture_product_preview")
 
-[node name="SpriteRoot" type="Node2D" parent="."]
+[node name="SpriteRoot" type="Node2D" parent="." unique_id=422353196]
 
-[node name="ProductSprite" type="Sprite2D" parent="SpriteRoot"]
+[node name="ProductSprite" type="Sprite2D" parent="SpriteRoot" unique_id=1014590023]
+texture = SubResource("AtlasTexture_product_preview")
 
-[node name="StickerLayer" type="Node2D" parent="SpriteRoot"]
+[node name="StickerLayer" type="Node2D" parent="SpriteRoot" unique_id=1827169044]
 
-[node name="CountLabel" type="Label" parent="SpriteRoot"]
+[node name="CountLabel" type="Label" parent="SpriteRoot" unique_id=1185753984]
 visible = false
 offset_left = 6.0
 offset_top = 5.0
@@ -46,26 +49,24 @@ text = "1"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="LoadingCircleSprite" type="Sprite2D" parent="."]
-visible = false
+[node name="LoadingCircleSprite" type="Sprite2D" parent="." unique_id=20755419]
 z_index = 20
 texture_filter = 1
-position = Vector2(-16, -16)
+position = Vector2(4, -19)
 scale = Vector2(0.5, 0.5)
 texture = ExtResource("5_loading_circle")
 centered = false
 hframes = 24
 
-[node name="InteractionArea" type="Area2D" parent="."]
-input_pickable = true
+[node name="InteractionArea" type="Area2D" parent="." unique_id=1355361765]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionArea"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionArea" unique_id=2046289534]
 shape = SubResource("RectangleShape2D_product_pick")
 
-[node name="WobbleAnchor" type="Marker2D" parent="."]
+[node name="WobbleAnchor" type="Marker2D" parent="." unique_id=897135922]
 
-[node name="StickerApplyPlayer" type="AudioStreamPlayer2D" parent="."]
+[node name="StickerApplyPlayer" type="AudioStreamPlayer2D" parent="." unique_id=167002570]
 stream = ExtResource("4_sticker_apply")
 volume_db = -3.0
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=203464232]

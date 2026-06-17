@@ -21,10 +21,9 @@ loading_circle_sprite = NodePath("LoadingCircleSprite")
 texture = SubResource("AtlasTexture_coupon")
 
 [node name="LoadingCircleSprite" type="Sprite2D" parent="."]
-visible = false
 z_index = 20
 texture_filter = 1
-position = Vector2(-16, -16)
+position = Vector2(0, -16)
 scale = Vector2(0.5, 0.5)
 texture = ExtResource("3_loading_circle")
 centered = false

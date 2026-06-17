@@ -16,7 +16,7 @@ const CURSOR_FRUIT_ANIMATION: StringName = &"blue_chevron"
 const CURSOR_SCANNING_ANIMATION: StringName = &"red_cross_laser"
 const CURSOR_REGISTER_ANIMATION: StringName = &"green_checkmark"
 const SCAN_MOUSE_BUTTON: MouseButton = MOUSE_BUTTON_RIGHT
-const SCAN_HOLD_DURATION_SECONDS: float = 2.0
+const SCAN_HOLD_DURATION_SECONDS: float = 1.5
 
 var _is_cursor_suppressed: bool = false
 var _is_register_hovered: bool = false
